@@ -23,7 +23,7 @@ export function CallerDashboard() {
     if (loaded) localStorage.setItem(KEY, JSON.stringify(called));
   }, [called, loaded]);
 
-  const current = called.length ? byId.get(called[called.length - 1])! : null;
+  const current = called.length ? byId.get(called[called.length - 1] ?? "") ?? null : null;
   const history = useMemo(
     () => called.slice(0, -1).map((id, i) => ({ song: byId.get(id)!, n: i + 1 })).reverse(),
     [called],

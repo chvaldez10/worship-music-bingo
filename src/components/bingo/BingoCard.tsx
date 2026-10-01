@@ -23,7 +23,7 @@ export function BingoCard({ cells, marked, winning, onToggle }: Props) {
           <BingoSquare
             key={i}
             cell={cell}
-            marked={marked[i]}
+            marked={!!marked[i]}
             inBingo={winning.has(i)}
             onToggle={() => onToggle(i)}
           />
