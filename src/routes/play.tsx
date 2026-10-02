@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { SONGS } from "@/data/songs";
-import { createBingoCard, detectBingo, initialMarks, FREE_INDEX, type Cell } from "@/lib/bingo";
+import {
+  createBingoCard,
+  restoreBingoCard,
+  detectBingo,
+  initialMarks,
+  FREE_INDEX,
+  type Cell,
+} from "@/lib/bingo";
 import { BingoCard } from "@/components/bingo/BingoCard";
 import { PrintableCard } from "@/components/bingo/PrintableCard";
 import { Btn } from "@/components/ui-lite";
@@ -28,16 +35,40 @@ function PlayPage() {
   const [cells, setCells] = useState<Cell[] | null>(null);
   const [marked, setMarked] = useState<boolean[]>(initialMarks);
 
+  const [storageError, setStorageError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Generate on the client only so each device gets its own shuffle.
+  // Read only after hydration; each player tab keeps its own card and marks.
   useEffect(() => {
     try {
-      setCells(createBingoCard(SONGS));
+      let restored: ReturnType<typeof restoreBingoCard> | null = null;
+      try {
+        const saved = sessionStorage.getItem("camp-bingo-player-v1");
+        if (saved) restored = restoreBingoCard(JSON.parse(saved), SONGS);
+      } catch {
+        setStorageError("The saved card could not be restored. A new card is ready.");
+      }
+      setCells(restored?.cells ?? createBingoCard(SONGS));
+      setMarked(restored?.marked ?? initialMarks());
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not generate a card.");
     }
   }, []);
+  useEffect(() => {
+    if (!cells) return;
+    try {
+      sessionStorage.setItem(
+        "camp-bingo-player-v1",
+        JSON.stringify({
+          version: 1,
+          ids: cells.map((cell) => (cell.kind === "free" ? null : cell.song.id)),
+          marked,
+        }),
+      );
+    } catch {
+      setStorageError("This browser cannot save your card. Keep this page open while playing.");
+    }
+  }, [cells, marked]);
 
   const lines = useMemo(() => detectBingo(marked), [marked]);
   const winning = useMemo(() => new Set(lines.flat()), [lines]);
@@ -59,6 +90,11 @@ function PlayPage() {
   return (
     <main className="mx-auto max-w-xl px-2 py-6 sm:px-4 sm:py-10">
       <div className="no-print">
+        {storageError && (
+          <p role="status" className="mb-4 text-center text-sm text-muted-foreground">
+            {storageError}
+          </p>
+        )}
         <div className="mb-4 flex min-h-12 items-center justify-center" aria-live="polite">
           {lines.length > 0 ? (
             <div className="bingo-banner rounded-full bg-primary px-6 py-2 font-display text-2xl text-primary-foreground shadow-soft">

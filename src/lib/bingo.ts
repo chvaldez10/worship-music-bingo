@@ -69,3 +69,38 @@ export function detectBingo(marked: readonly boolean[]): number[][] {
 export function initialMarks(): boolean[] {
   return Array.from({ length: 25 }, (_, i) => i === FREE_INDEX);
 }
+
+/** Restore only a valid card from the current master bank. Never trust stored titles. */
+export function restoreBingoCard(
+  saved: unknown,
+  songs: readonly Song[],
+): { cells: Cell[]; marked: boolean[] } {
+  validateSongs(songs);
+  const invalid = (): never => {
+    throw new Error("Saved bingo card is invalid or its songs have changed.");
+  };
+  if (!saved || typeof saved !== "object") return invalid();
+  const data = saved as Record<string, unknown>;
+  const ids = data["ids"],
+    marks = data["marked"];
+  if (
+    data["version"] !== 1 ||
+    !Array.isArray(ids) ||
+    ids.length !== 25 ||
+    !Array.isArray(marks) ||
+    marks.length !== 25 ||
+    marks.some((mark) => typeof mark !== "boolean")
+  )
+    return invalid();
+  const bank = new Map(songs.map((song) => [song.id, song]));
+  const used = new Set<string>();
+  const cells: Cell[] = ids.map((id: unknown, i: number) => {
+    if (i === FREE_INDEX) return id === null ? { kind: "free" } : invalid();
+    if (typeof id !== "string" || used.has(id)) return invalid();
+    const song = bank.get(id);
+    if (!song) return invalid();
+    used.add(id);
+    return { kind: "song", song };
+  });
+  return { cells, marked: marks.map((mark, i) => i === FREE_INDEX || mark === true) };
+}

@@ -1,68 +1,55 @@
-import { useEffect, useReducer, useState } from "react";
+import { useState } from "react";
 import type { Prompt } from "@/data/game-prompts";
-import { initialPartyState, partyReducer } from "@/lib/party-game";
+import { ROUND_DURATIONS } from "@/lib/party-game";
+import { usePartyGame, type PromptCategory } from "@/hooks/use-party-game";
 import { Btn } from "@/components/ui-lite";
 
 type Props = {
+  gameId: string;
   title: string;
   description: string;
   instructions: string[];
   prompts: Prompt[];
   defaultSeconds: number;
-  category?: string;
-  categories?: { id: string; label: string }[];
-  onCategoryChange?: (id: string) => void;
+  categories?: PromptCategory[];
 };
 
 export function HostedPromptGame({
+  gameId,
   title,
   description,
   instructions,
   prompts,
   defaultSeconds,
-  category,
   categories,
-  onCategoryChange,
 }: Props) {
-  const [state, dispatch] = useReducer(partyReducer, undefined, initialPartyState);
+  const { state, dispatch, loaded, storageError } = usePartyGame(
+    gameId,
+    prompts,
+    categories,
+    defaultSeconds,
+  );
   const [revealed, setRevealed] = useState(false);
-  const [duration, setDuration] = useState(defaultSeconds);
-  const [seconds, setSeconds] = useState(defaultSeconds);
-  const [deadline, setDeadline] = useState<number | null>(null);
+  const { duration, deadline } = state.timer;
+  const seconds = Math.ceil(state.timer.remainingMs / 1000);
+  const available = categories?.find((group) => group.id === state.category)?.prompts ?? prompts;
   const pending = state.current?.result === null;
-  const remaining = prompts.filter((prompt) => !state.used.includes(prompt.id));
+  const remaining = available.filter((prompt) => !state.used.includes(prompt.id));
   const active = state.teams[state.activeTeam];
   const roundTeam = state.teams.find((team) => team.id === state.current?.teamId);
   const nameFor = (id: string) =>
     state.teams.find((team) => team.id === id)?.name.trim() || "Unnamed team";
 
-  useEffect(() => {
-    if (deadline === null) return;
-    const tick = () => {
-      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-      setSeconds(left);
-      if (left === 0) setDeadline(null);
-    };
-    tick();
-    const interval = window.setInterval(tick, 250);
-    return () => window.clearInterval(interval);
-  }, [deadline]);
-
-  const resetTimer = () => {
-    setDeadline(null);
-    setSeconds(duration);
-  };
+  const resetTimer = () => dispatch({ type: "timer-reset" });
   const draw = () => {
-    if (pending || !remaining.length) return;
+    if (!loaded || pending || !remaining.length) return;
     const prompt = remaining[Math.floor(Math.random() * remaining.length)];
     if (!prompt) return;
     dispatch({ type: "draw", prompt });
     setRevealed(false);
-    resetTimer();
   };
   const finish = (result: "correct" | "pass") => {
-    dispatch({ type: "result", result });
-    setDeadline(null);
+    dispatch({ type: "result", result, now: Date.now() });
     setRevealed(true);
   };
 
@@ -75,6 +62,11 @@ export function HostedPromptGame({
         <h1 className="mt-2 font-display text-4xl sm:text-5xl">{title}</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">{description}</p>
       </div>
+      {storageError && (
+        <p role="status" className="mb-4 rounded-xl bg-secondary p-4 text-sm">
+          {storageError}
+        </p>
+      )}
       <div className="grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="min-w-0 space-y-6">
           <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
@@ -84,10 +76,10 @@ export function HostedPromptGame({
                   Category
                   <select
                     aria-label="Charades category"
-                    value={category}
-                    disabled={pending}
+                    value={state.category ?? ""}
+                    disabled={!loaded || pending}
                     onChange={(e) => {
-                      onCategoryChange?.(e.target.value);
+                      dispatch({ type: "category", category: e.target.value });
                       setRevealed(false);
                     }}
                     className="mt-2 block w-full rounded-xl border border-border bg-background p-3 disabled:opacity-50"
@@ -105,15 +97,14 @@ export function HostedPromptGame({
                 <select
                   aria-label="Round timer"
                   value={duration}
-                  disabled={pending}
+                  disabled={!loaded || pending}
                   onChange={(e) => {
                     const value = Number(e.target.value);
-                    setDuration(value);
-                    setSeconds(value);
+                    dispatch({ type: "duration", seconds: value });
                   }}
                   className="mt-2 block rounded-xl border border-border bg-background p-3 disabled:opacity-50"
                 >
-                  {[30, 60, 90, 120].map((value) => (
+                  {ROUND_DURATIONS.map((value) => (
                     <option key={value} value={value}>
                       {value} seconds
                     </option>
@@ -171,20 +162,19 @@ export function HostedPromptGame({
               </span>
               <Btn
                 variant="outline"
-                disabled={!pending || seconds === 0}
+                disabled={!loaded || !pending || seconds === 0}
                 onClick={() => {
                   if (deadline !== null) {
-                    setSeconds(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
-                    setDeadline(null);
+                    dispatch({ type: "timer-pause", now: Date.now() });
                   } else {
                     setRevealed(false);
-                    setDeadline(Date.now() + seconds * 1000);
+                    dispatch({ type: "timer-start", now: Date.now() });
                   }
                 }}
               >
                 {deadline !== null ? "Pause timer" : "Start timer"}
               </Btn>
-              <Btn variant="ghost" disabled={!pending} onClick={resetTimer}>
+              <Btn variant="ghost" disabled={!loaded || !pending} onClick={resetTimer}>
                 Reset timer
               </Btn>
             </div>
@@ -201,19 +191,33 @@ export function HostedPromptGame({
               </p>
             )}
             <div className="mt-6 flex flex-wrap gap-2">
-              <Btn disabled={pending || !remaining.length} onClick={draw}>
+              <Btn disabled={!loaded || pending || !remaining.length} onClick={draw}>
                 Draw next prompt
               </Btn>
-              <Btn disabled={!pending} onClick={() => finish("correct")}>
+              <Btn disabled={!loaded || !pending} onClick={() => finish("correct")}>
                 Correct · +1 point
               </Btn>
-              <Btn variant="outline" disabled={!pending} onClick={() => finish("pass")}>
+              <Btn variant="outline" disabled={!loaded || !pending} onClick={() => finish("pass")}>
                 Pass / Miss
+              </Btn>
+              <Btn
+                variant="ghost"
+                disabled={!loaded || pending || !state.history.length}
+                onClick={() => {
+                  const group = categories?.find((category) =>
+                    category.prompts.some((prompt) => prompt.id === state.current?.prompt.id),
+                  );
+                  dispatch({ type: "undo", category: group?.id ?? null });
+                  setRevealed(false);
+                }}
+              >
+                Undo last result
               </Btn>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              {remaining.length} of {prompts.length} prompts remaining in this category. Draws do
-              not repeat until restart.
+              {remaining.length} of {available.length} prompts remaining{" "}
+              {categories ? "in this category" : "in the song bank"}. Draws do not repeat until
+              restart.
             </p>
             {!remaining.length && !pending && (
               <p role="status" className="mt-3 font-semibold">
@@ -232,8 +236,8 @@ export function HostedPromptGame({
               ))}
             </ol>
             <p className="mt-4 text-sm text-muted-foreground">
-              Use one host device. Scores stay on this page until you restart, refresh, or leave the
-              game.
+              Use one host tab. Scores and rounds are saved in this tab, including after a refresh
+              or a visit to another game.
             </p>
           </section>
         </div>
@@ -252,6 +256,7 @@ export function HostedPromptGame({
                   <label className="min-w-0 flex-1">
                     <span className="sr-only">Team {i + 1} name</span>
                     <input
+                      disabled={!loaded}
                       maxLength={40}
                       value={team.name}
                       onChange={(e) =>
@@ -260,31 +265,31 @@ export function HostedPromptGame({
                       className="w-full min-w-0 rounded-lg border border-border bg-card px-3 py-2 font-semibold"
                     />
                   </label>
-                  <span
-                    aria-label={`${team.name || "Unnamed team"} score`}
+                  <output
+                    aria-label={`${team.name.trim() || "Unnamed team"} score`}
                     className="font-display text-3xl tabular-nums"
                   >
                     {team.score}
-                  </span>
+                  </output>
                 </div>
               ))}
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <Btn
                 variant="outline"
-                disabled={!!state.used.length || state.teams.length >= 6}
+                disabled={!loaded || !!state.used.length || state.teams.length >= 6}
                 onClick={() => dispatch({ type: "add-team" })}
               >
                 Add team
               </Btn>
               <Btn
                 variant="danger"
+                disabled={!loaded}
                 onClick={() => {
                   if (
                     window.confirm("Restart this game? This clears all scores and used prompts.")
                   ) {
                     dispatch({ type: "restart" });
-                    resetTimer();
                     setRevealed(false);
                   }
                 }}

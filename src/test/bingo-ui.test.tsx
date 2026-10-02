@@ -24,10 +24,25 @@ function renderAt(path: string) {
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  sessionStorage.clear();
   vi.restoreAllMocks();
 });
 
 describe("Player", () => {
+  it("restores the same card and marks after leaving the page", async () => {
+    const first = renderAt("/play");
+    await screen.findByRole("button", { name: "FREE" });
+    const cells = first.container.querySelectorAll<HTMLButtonElement>(".bingo-cell");
+    const titles = Array.from(cells, (cell) => cell.textContent);
+    fireEvent.click(cells[0]!);
+    first.unmount();
+    const second = renderAt("/play");
+    await screen.findByRole("button", { name: "FREE" });
+    const restored = second.container.querySelectorAll<HTMLButtonElement>(".bingo-cell");
+    expect(Array.from(restored, (cell) => cell.textContent)).toEqual(titles);
+    expect(restored[0]).toHaveAttribute("aria-pressed", "true");
+    expect(restored[12]).toHaveAttribute("aria-pressed", "true");
+  });
   it("marks, unmarks, detects bingo, resets, regenerates and prints", async () => {
     const print = vi.spyOn(window, "print").mockImplementation(() => {});
     const { container } = renderAt("/play");

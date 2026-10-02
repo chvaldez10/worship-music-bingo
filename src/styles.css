@@ -79,7 +79,7 @@
   --card-foreground: oklch(0.25 0.03 45);
   --popover: oklch(0.995 0.005 80);
   --popover-foreground: oklch(0.25 0.03 45);
-  --primary: oklch(0.6 0.15 40);
+  --primary: oklch(0.56 0.15 40);
   --primary-foreground: oklch(0.99 0.005 80);
   --secondary: oklch(0.93 0.025 75);
   --secondary-foreground: oklch(0.3 0.03 45);
@@ -291,4 +291,22 @@
   .print-layout-4 .bingo-print-letter { font-size: 16pt; padding: 2pt 0; }
   .print-layout-4 .bingo-print-cell { height: 0.65in; font-size: 8pt; padding: 3pt; }
   .print-layout-4 .bingo-print-free { font-size: 13pt; }
+}
+
+/* Keyboard and motion preferences apply consistently across all games. */
+@layer base {
+  :where(button, a, input, select, textarea):focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

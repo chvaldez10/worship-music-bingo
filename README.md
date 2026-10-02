@@ -32,9 +32,9 @@ Generate cards and choose **Print / Save as PDF**, or use **Print Card** on the 
 
 Edit `src/data/songs.ts`, the shared source for Bingo, Singing Bee, and worship-song charades. The included list has 49 songs. Each song needs a non-empty, unique ID and a title; artist is optional. Matching titles with different IDs are allowed. Cards require at least 24 songs, and invalid song data produces a visible message.
 
-New hosted games keep scores and rounds on the current page only; refreshing or navigating away starts over. Restarting requires confirmation and preserves team names. Add Bible-event and church-activity charades prompts in `src/data/game-prompts.ts`.
+Hosted games and player Bingo cards save progress in browser session storage, isolated to each tab. Refreshing or visiting another game in the same tab resumes progress. Closing the tab ends that session. Running timers continue to elapse while away. If storage is unavailable or corrupted, the app reports it and remains playable. Restarting requires confirmation and preserves team names. Add Bible-event and church-activity charades prompts in `src/data/game-prompts.ts`.
 
-Player cards and print batches are temporary. Caller progress is stored only on this device; there is no multiplayer synchronization.
+Print batches are temporary; generate them again after a refresh. Caller progress is stored only on this device; there is no multiplayer synchronization.
 
 ## Checks
 
@@ -46,6 +46,8 @@ bun run build
 ```
 
 Equivalent npm commands are `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+
+To test the compiled production build locally, run `npm run build`, then `npm run preview` (or the Bun equivalents). Preview uses Cloudflare's local worker runtime because the build targets Cloudflare. It does not deploy the app. Stop it with Ctrl+C.
 
 ## Lovable
 

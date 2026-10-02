@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { HostedPromptGame } from "@/components/games/HostedPromptGame";
-import { CHARADES_CATEGORIES, charadesPrompts, type CharadesCategory } from "@/data/game-prompts";
+import { CHARADES_CATEGORIES, charadesPrompts } from "@/data/game-prompts";
 
 export const Route = createFileRoute("/charades")({
   head: () => ({
@@ -17,19 +16,21 @@ export const Route = createFileRoute("/charades")({
   component: CharadesPage,
 });
 
+const categories = CHARADES_CATEGORIES.map((category) => ({
+  ...category,
+  prompts: charadesPrompts(category.id),
+}));
+const prompts: [] = [];
+
 function CharadesPage() {
-  const [category, setCategory] = useState<CharadesCategory>("bible");
   return (
     <HostedPromptGame
+      gameId="charades"
       title="Charades"
       description="A little acting, a lot of laughter. Take turns bringing familiar stories, songs, and church life to life."
       defaultSeconds={60}
-      prompts={charadesPrompts(category)}
-      category={category}
-      categories={CHARADES_CATEGORIES}
-      onCategoryChange={(id) => {
-        if (CHARADES_CATEGORIES.some((item) => item.id === id)) setCategory(id as CharadesCategory);
-      }}
+      prompts={prompts}
+      categories={categories}
       instructions={[
         "Choose a category and let one actor from the active team reveal the prompt privately.",
         "Hide the prompt and start the timer. Act without speaking, singing, or spelling words.",

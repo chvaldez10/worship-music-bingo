@@ -15,12 +15,15 @@ export const Route = createFileRoute("/singing-bee")({
   component: SingingBeePage,
 });
 
+const prompts = singingBeePrompts();
+
 function SingingBeePage() {
   return (
     <HostedPromptGame
+      gameId="singing-bee"
       title="Worship Singing Bee"
       description="Start a familiar worship song, stop singing, and let the team carry it on. The same song bank powers Worship Bingo."
-      prompts={singingBeePrompts()}
+      prompts={prompts}
       defaultSeconds={30}
       instructions={[
         "The host draws and privately reveals a song title. Agree on the verse or chorus and how much the team must sing.",
