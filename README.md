@@ -30,7 +30,7 @@ Generate cards and choose **Print / Save as PDF**, or use **Print Card** on the 
 
 ## Customize songs
 
-Edit `src/data/songs.ts`, the shared source for Bingo, Singing Bee, and worship-song charades. The included list has 49 songs. Each song needs a non-empty, unique ID and a title; artist is optional. Matching titles with different IDs are allowed. Cards require at least 24 songs, and invalid song data produces a visible message.
+Edit `src/data/songs.ts`, the shared source for Bingo, Singing Bee, and worship-song charades. The included list has 59 songs, including 10 familiar hymns. Each song needs a non-empty, unique ID and a title; artist is optional. Matching titles with different IDs are allowed. Cards require at least 24 songs, and invalid song data produces a visible message.
 
 Hosted games and player Bingo cards save progress in browser session storage, isolated to each tab. Refreshing or visiting another game in the same tab resumes progress. Closing the tab ends that session. Running timers continue to elapse while away. If storage is unavailable or corrupted, the app reports it and remains playable. Restarting requires confirmation and preserves team names. Add Bible-event and church-activity charades prompts in `src/data/game-prompts.ts`.
 
