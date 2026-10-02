@@ -1,4 +1,4 @@
-// Master song list — used by BOTH card generation and the caller page.
+// Shared song bank — Bingo cards/caller, Worship Singing Bee, and song charades.
 // Replace or extend this list to customize the game.
 export type Song = {
   id: string;

@@ -79,8 +79,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Worship Music Bingo" },
-      { name: "description", content: "Music bingo for church and community events." },
+      { title: "Church Camp Games" },
+      {
+        name: "description",
+        content: "Parlor games for church camp: Worship Bingo, Charades, and Worship Singing Bee.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -10,18 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BingoRouteImport } from './routes/bingo'
 import { Route as CallerRouteImport } from './routes/caller'
+import { Route as CharadesRouteImport } from './routes/charades'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrintRouteImport } from './routes/print'
+import { Route as SingingBeeRouteImport } from './routes/singing-bee'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BingoRoute = BingoRouteImport.update({
+  id: '/bingo',
+  path: '/bingo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CallerRoute = CallerRouteImport.update({
   id: '/caller',
   path: '/caller',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CharadesRoute = CharadesRouteImport.update({
+  id: '/charades',
+  path: '/charades',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayRoute = PlayRouteImport.update({
@@ -34,39 +47,78 @@ const PrintRoute = PrintRouteImport.update({
   path: '/print',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SingingBeeRoute = SingingBeeRouteImport.update({
+  id: '/singing-bee',
+  path: '/singing-bee',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
+  '/charades': typeof CharadesRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
+  '/singing-bee': typeof SingingBeeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
+  '/charades': typeof CharadesRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
+  '/singing-bee': typeof SingingBeeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
+  '/charades': typeof CharadesRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
+  '/singing-bee': typeof SingingBeeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/caller' | '/play' | '/print'
+  fullPaths:
+    | '/'
+    | '/bingo'
+    | '/caller'
+    | '/charades'
+    | '/play'
+    | '/print'
+    | '/singing-bee'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/caller' | '/play' | '/print'
-  id: '__root__' | '/' | '/caller' | '/play' | '/print'
+  to:
+    | '/'
+    | '/bingo'
+    | '/caller'
+    | '/charades'
+    | '/play'
+    | '/print'
+    | '/singing-bee'
+  id:
+    | '__root__'
+    | '/'
+    | '/bingo'
+    | '/caller'
+    | '/charades'
+    | '/play'
+    | '/print'
+    | '/singing-bee'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BingoRoute: typeof BingoRoute
   CallerRoute: typeof CallerRoute
+  CharadesRoute: typeof CharadesRoute
   PlayRoute: typeof PlayRoute
   PrintRoute: typeof PrintRoute
+  SingingBeeRoute: typeof SingingBeeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -78,11 +130,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bingo': {
+      id: '/bingo'
+      path: '/bingo'
+      fullPath: '/bingo'
+      preLoaderRoute: typeof BingoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/caller': {
       id: '/caller'
       path: '/caller'
       fullPath: '/caller'
       preLoaderRoute: typeof CallerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/charades': {
+      id: '/charades'
+      path: '/charades'
+      fullPath: '/charades'
+      preLoaderRoute: typeof CharadesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/play': {
@@ -99,14 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrintRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/singing-bee': {
+      id: '/singing-bee'
+      path: '/singing-bee'
+      fullPath: '/singing-bee'
+      preLoaderRoute: typeof SingingBeeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BingoRoute: BingoRoute,
   CallerRoute: CallerRoute,
+  CharadesRoute: CharadesRoute,
   PlayRoute: PlayRoute,
   PrintRoute: PrintRoute,
+  SingingBeeRoute: SingingBeeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
