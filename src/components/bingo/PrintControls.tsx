@@ -1,7 +1,7 @@
 import { Btn } from "@/components/ui-lite";
 import { cn } from "@/lib/utils";
 
-const PRESETS = [1, 5, 10, 20, 25, 50];
+const PRESETS = [1, 2, 4];
 
 type Props = {
   count: number;
@@ -14,7 +14,9 @@ export function PrintControls({ count, setCount, onGenerate, hasCards }: Props) 
   return (
     <div className="no-print rounded-3xl border border-border bg-card p-6 shadow-soft">
       <h1 className="font-display text-3xl text-foreground">Print bingo cards</h1>
-      <p className="mt-1 text-muted-foreground">Each card is randomized and numbered — one per US Letter page.</p>
+      <p className="mt-1 text-muted-foreground">
+        Each card is randomized and numbered — 1, 2, or 4 cards fit on each US Letter page.
+      </p>
       <label className="mt-6 block text-sm font-semibold text-foreground">Number of cards</label>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {PRESETS.map((p) => (
@@ -32,9 +34,9 @@ export function PrintControls({ count, setCount, onGenerate, hasCards }: Props) 
         <input
           type="number"
           min={1}
-          max={500}
+          max={4}
           value={count}
-          onChange={(e) => setCount(Math.max(1, Math.min(500, Number(e.target.value) || 1)))}
+          onChange={(e) => setCount(Math.max(1, Math.min(4, Number(e.target.value) || 1)))}
           className="h-10 w-24 rounded-full border-2 border-border bg-background px-4 text-sm font-semibold"
           aria-label="Custom number of cards"
         />

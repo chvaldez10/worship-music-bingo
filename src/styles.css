@@ -185,4 +185,30 @@
   .bingo-print-letter { font-size: 28pt; border: 1.5px solid #000; padding: 4pt 0; }
   .bingo-print-cell { border: 1.5px solid #000; font-size: 12pt; padding: 6pt; color: #000; }
   .bingo-print-free { font-size: 20pt; }
+
+  /* 2 cards per page */
+  .print-per-2 .print-card { height: 4.7in; }
+  .print-per-2 .print-card:nth-child(odd) { break-after: page; page-break-after: always; }
+  .print-per-2 .print-card:nth-child(even) { break-after: auto; page-break-after: auto; }
+  .print-per-2 .print-card-header h2 { font-size: 18pt; }
+  .print-per-2 .print-card-header p { font-size: 10pt; }
+  .print-per-2 .print-card-header { margin-bottom: 0.15in; }
+  .print-per-2 .bingo-print-letter { font-size: 16pt; padding: 2pt 0; }
+  .print-per-2 .bingo-print-cell { font-size: 9pt; padding: 4pt; }
+  .print-per-2 .bingo-print-free { font-size: 13pt; }
+
+  /* 4 cards per page (2 x 2) */
+  .print-per-4 { display: grid !important; grid-template-columns: repeat(2, 1fr); }
+  .print-per-4 .print-card {
+    width: 3.7in; margin: 0 auto;
+    height: 4.85in;
+    break-after: auto; page-break-after: auto;
+  }
+  .print-per-4 .print-card-header h2 { font-size: 12pt; }
+  .print-per-4 .print-card-header p { font-size: 8pt; }
+  .print-per-4 .print-card-header { margin-bottom: 0.08in; }
+  .print-per-4 .print-grid { width: auto; }
+  .print-per-4 .bingo-print-letter { font-size: 10pt; padding: 1pt 0; }
+  .print-per-4 .bingo-print-cell { font-size: 5.5pt; padding: 2pt; }
+  .print-per-4 .bingo-print-free { font-size: 8pt; }
 }
