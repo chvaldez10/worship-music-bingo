@@ -36,15 +36,18 @@ export function BingoSquare({ cell, marked, inBingo, onToggle, printable }: Prop
       aria-pressed={marked}
       aria-label={label}
       className={cn(
-        "bingo-cell relative flex aspect-square items-center justify-center overflow-hidden p-1 text-center leading-tight font-semibold break-words hyphens-auto transition-all sm:p-2",
-        isFree ? "bg-primary text-primary-foreground font-display text-base sm:text-2xl" : sizeFor(label),
+        "bingo-cell relative flex min-h-20 w-full sm:aspect-square items-center justify-center min-w-0 overflow-hidden p-1 text-center font-semibold break-words hyphens-auto transition-all sm:p-2",
+        isFree
+          ? "bg-primary text-primary-foreground font-display text-base sm:text-2xl"
+          : sizeFor(label),
         !isFree && !marked && "bg-card text-card-foreground hover:bg-secondary",
         !isFree && marked && "bg-mark text-mark-foreground",
         inBingo && "bingo-win",
+        "leading-tight",
       )}
     >
       {marked && !isFree && <span className="bingo-dot" aria-hidden />}
-      <span className="relative z-10">{label}</span>
+      <span className="relative z-10 min-w-0 [overflow-wrap:anywhere]">{label}</span>
     </button>
   );
 }

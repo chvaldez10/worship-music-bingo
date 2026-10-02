@@ -10,9 +10,15 @@ export const Route = createFileRoute("/play")({
   head: () => ({
     meta: [
       { title: "Play — Worship Music Bingo" },
-      { name: "description", content: "Your randomized worship music bingo card. Tap songs as you hear them." },
+      {
+        name: "description",
+        content: "Your randomized worship music bingo card. Tap songs as you hear them.",
+      },
       { property: "og:title", content: "Play — Worship Music Bingo" },
-      { property: "og:description", content: "Your randomized worship music bingo card. Tap songs as you hear them." },
+      {
+        property: "og:description",
+        content: "Your randomized worship music bingo card. Tap songs as you hear them.",
+      },
     ],
   }),
   component: PlayPage,
@@ -22,8 +28,16 @@ function PlayPage() {
   const [cells, setCells] = useState<Cell[] | null>(null);
   const [marked, setMarked] = useState<boolean[]>(initialMarks);
 
+  const [error, setError] = useState<string | null>(null);
+
   // Generate on the client only so each device gets its own shuffle.
-  useEffect(() => setCells(createBingoCard(SONGS)), []);
+  useEffect(() => {
+    try {
+      setCells(createBingoCard(SONGS));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not generate a card.");
+    }
+  }, []);
 
   const lines = useMemo(() => detectBingo(marked), [marked]);
   const winning = useMemo(() => new Set(lines.flat()), [lines]);
@@ -33,8 +47,13 @@ function PlayPage() {
     setMarked((m) => m.map((v, j) => (j === i ? !v : v)));
   };
   const newCard = () => {
-    setCells(createBingoCard(SONGS));
-    setMarked(initialMarks());
+    try {
+      setCells(createBingoCard(SONGS));
+      setMarked(initialMarks());
+      setError(null);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not generate a card.");
+    }
   };
 
   return (
@@ -50,16 +69,25 @@ function PlayPage() {
           )}
         </div>
 
+        {error && (
+          <p role="alert" className="mb-4 text-center text-destructive">
+            {error}
+          </p>
+        )}
         {cells ? (
           <BingoCard cells={cells} marked={marked} winning={winning} onToggle={toggle} />
         ) : (
-          <div className="aspect-[5/5.4] w-full animate-pulse rounded-2xl bg-secondary" />
+          !error && <div className="aspect-[5/5.4] w-full animate-pulse rounded-2xl bg-secondary" />
         )}
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <Btn onClick={newCard}>New Card</Btn>
-          <Btn variant="outline" onClick={() => setMarked(initialMarks())}>Reset Marks</Btn>
-          <Btn variant="outline" onClick={() => window.print()}>Print Card</Btn>
+          <Btn variant="outline" disabled={!cells} onClick={() => setMarked(initialMarks())}>
+            Reset Marks
+          </Btn>
+          <Btn variant="outline" disabled={!cells} onClick={() => window.print()}>
+            Print Card
+          </Btn>
         </div>
       </div>
       {cells && (

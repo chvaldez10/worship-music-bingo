@@ -10,7 +10,9 @@ export function PrintableCard({ cells, number }: { cells: Cell[]; number: number
       </header>
       <div className="print-grid">
         {["B", "I", "N", "G", "O"].map((l) => (
-          <div key={l} className="bingo-print-letter">{l}</div>
+          <div key={l} className="bingo-print-letter">
+            {l}
+          </div>
         ))}
         {cells.map((c, i) => (
           <BingoSquare key={i} cell={c} printable />

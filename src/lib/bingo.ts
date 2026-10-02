@@ -1,4 +1,5 @@
 import type { Song } from "@/data/songs";
+import { validateSongs } from "@/data/songs";
 
 export const FREE_INDEX = 12;
 export type Cell = { kind: "song"; song: Song } | { kind: "free" };
@@ -15,11 +16,41 @@ export function shuffleSongs<T>(items: readonly T[]): T[] {
 
 /** 25 cells: 24 unique random songs with FREE at index 12. */
 export function createBingoCard(songs: readonly Song[]): Cell[] {
-  if (songs.length < 24) throw new Error("Need at least 24 songs");
+  validateSongs(songs);
+  if (songs.length < 24)
+    throw new Error(
+      "At least 24 songs are needed to make a card. Add songs to the master song list.",
+    );
   const picked = shuffleSongs(songs).slice(0, 24);
   const cells: Cell[] = picked.map((song) => ({ kind: "song", song }));
   cells.splice(FREE_INDEX, 0, { kind: "free" });
   return cells;
+}
+
+export const MAX_PRINT_CARDS = 500;
+
+export function cardSignature(cells: readonly Cell[]): string {
+  return JSON.stringify(cells.map((cell) => (cell.kind === "free" ? null : cell.song.id)));
+}
+
+/** Generate an entire batch or fail clearly, never return a partial batch. */
+export function createBingoBatch(songs: readonly Song[], count: number): Cell[][] {
+  if (!Number.isInteger(count) || count < 1 || count > MAX_PRINT_CARDS) {
+    throw new Error(`Enter a whole number from 1 to ${MAX_PRINT_CARDS} cards.`);
+  }
+  const cards: Cell[][] = [];
+  const signatures = new Set<string>();
+  for (let attempts = 0; cards.length < count && attempts < count * 100; attempts++) {
+    const card = createBingoCard(songs);
+    const signature = cardSignature(card);
+    if (!signatures.has(signature)) {
+      signatures.add(signature);
+      cards.push(card);
+    }
+  }
+  if (cards.length !== count)
+    throw new Error("Could not generate enough unique cards. Try generating the batch again.");
+  return cards;
 }
 
 export const LINES: number[][] = (() => {

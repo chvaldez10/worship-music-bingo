@@ -15,7 +15,10 @@ export function BingoCard({ cells, marked, winning, onToggle }: Props) {
     <div className="bingo-board w-full overflow-hidden rounded-2xl border-2 border-board bg-board shadow-soft">
       <div className="grid grid-cols-5 gap-[2px] bg-board">
         {LETTERS.map((l) => (
-          <div key={l} className="bg-board py-2 text-center font-display text-2xl text-board-foreground sm:text-4xl">
+          <div
+            key={l}
+            className="bg-board py-2 text-center font-display text-2xl text-board-foreground sm:text-4xl"
+          >
             {l}
           </div>
         ))}

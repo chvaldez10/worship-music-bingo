@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 
 Object.defineProperty(window, "scrollTo", {
@@ -18,3 +19,6 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// Router tests exercise the client bundle in jsdom.
+vi.mock("@tanstack/router-core/isServer", () => ({ isServer: false }));

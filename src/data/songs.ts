@@ -6,6 +6,22 @@ export type Song = {
   artist?: string;
 };
 
+/** IDs define identity; matching titles with different IDs are allowed. */
+export function validateSongs(songs: readonly Song[]): void {
+  const ids = new Set<string>();
+  for (const song of songs) {
+    if (!song.id.trim() || !song.title.trim()) {
+      throw new Error("Every song needs a non-empty ID and title. Update the master song list.");
+    }
+    if (ids.has(song.id)) {
+      throw new Error(
+        `Duplicate song ID "${song.id}". Give each song a unique ID in the master song list.`,
+      );
+    }
+    ids.add(song.id);
+  }
+}
+
 const raw: [string, string][] = [
   ["Goodness of God", "Bethel Music / Jenn Johnson"],
   ["Holy Forever", "Chris Tomlin"],
@@ -47,6 +63,15 @@ const raw: [string, string][] = [
   ["Indescribable", "Chris Tomlin"],
   ["Hosanna", "Hillsong UNITED"],
   ["Amazing Grace (My Chains Are Gone)", "Chris Tomlin"],
+  ["Glorious Day", "Passion / Kristian Stanfill"],
+  ["Good Good Father", "Chris Tomlin"],
+  ["Christ Is Enough", "Hillsong Worship"],
+  ["The Stand", "Hillsong UNITED"],
+  ["Every Praise", "Hezekiah Walker"],
+  ["Jireh", "Elevation Worship / Maverick City Music"],
+  ["Promises", "Maverick City Music"],
+  ["See a Victory", "Elevation Worship"],
+  ["I Speak Jesus", "Charity Gayle"],
 ];
 
 export const SONGS: Song[] = raw.map(([title, artist], i) => ({

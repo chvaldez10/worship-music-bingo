@@ -152,7 +152,7 @@
 .print-card-header { text-align: center; margin-bottom: 0.6rem; }
 .print-card-header h2 { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: 0.08em; text-transform: uppercase; }
 .print-card-header p { font-size: 0.8rem; font-weight: 600; color: var(--muted-foreground); }
-.print-grid { display: grid; grid-template-columns: repeat(5, 1fr); border: 2px solid var(--foreground); }
+.print-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 2px solid var(--foreground); }
 .bingo-print-letter {
   font-family: var(--font-display); text-align: center; font-size: 1.1rem; padding: 0.15rem 0;
   border: 1px solid var(--foreground); font-weight: 700;
@@ -164,51 +164,131 @@
 }
 .bingo-print-free { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; }
 .print-only { display: none; }
+.print-sheet { display: grid; gap: 1rem; width: 100%; max-width: 48rem; margin: 0 auto; }
+@media screen and (min-width: 640px) {
+  .print-layout-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media print {
-  @page { size: letter portrait; margin: 0.5in; }
-  html, body { background: #fff !important; color: #000 !important; }
-  .no-print, header.no-print, button, input, nav { display: none !important; }
-  .print-only { display: block !important; }
-  main { padding: 0 !important; max-width: none !important; }
-  .print-stack { display: block !important; margin: 0 !important; }
+  @page {
+    size: letter portrait;
+    margin: 0.4in;
+  }
+  html,
+  body {
+    margin: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .no-print,
+  header.no-print,
+  button,
+  input,
+  select,
+  textarea,
+  nav {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .print-batch { margin-top: 0 !important; }
+  .print-stack {
+    display: block !important;
+    margin: 0 !important;
+  }
   .print-card {
-    border: none; border-radius: 0; padding: 0; margin: 0;
-    break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always;
-    height: 9.9in; display: flex; flex-direction: column; justify-content: center;
+    background: #fff;
+    color: #000;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-after: page;
+    page-break-after: always;
+    height: 10in;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  .print-card:last-child { break-after: auto; page-break-after: auto; }
-  .print-card-header h2 { font-size: 26pt; color: #000; }
-  .print-card-header p { font-size: 13pt; color: #000; }
-  .print-card-header { margin-bottom: 0.25in; }
-  .print-grid { border: 3px solid #000; width: 7.5in; margin: 0 auto; }
-  .bingo-print-letter { font-size: 28pt; border: 1.5px solid #000; padding: 4pt 0; }
-  .bingo-print-cell { border: 1.5px solid #000; font-size: 12pt; padding: 6pt; color: #000; aspect-ratio: auto; height: 1.4in; }
-  .bingo-print-free { font-size: 20pt; }
-
-  /* 2 cards per page */
-  .print-per-2 .print-card { height: 4.7in; }
-  .print-per-2 .print-card:nth-child(odd) { break-after: auto; page-break-after: auto; }
-  .print-per-2 .print-card:nth-child(even) { break-after: page; page-break-after: always; }
-  .print-per-2 .print-card-header h2 { font-size: 18pt; }
-  .print-per-2 .print-card-header p { font-size: 10pt; }
-  .print-per-2 .print-card-header { margin-bottom: 0.1in; }
-  .print-per-2 .bingo-print-letter { font-size: 16pt; padding: 2pt 0; }
-  .print-per-2 .bingo-print-cell { font-size: 9pt; padding: 3pt; height: 0.62in; }
-  .print-per-2 .bingo-print-free { font-size: 13pt; }
-
-  /* 4 cards per page (2 x 2) */
-  .print-per-4 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 7.5in; margin: 0 auto; }
-  .print-per-4 .print-card {
-    width: 100%; margin: 0;
-    height: 4.8in;
-    break-after: auto; page-break-after: auto;
+  .print-card:last-child {
+    break-after: auto;
+    page-break-after: auto;
   }
-  .print-per-4 .print-card-header h2 { font-size: 12pt; }
-  .print-per-4 .print-card-header p { font-size: 8pt; }
-  .print-per-4 .print-card-header { margin-bottom: 0.06in; }
-  .print-per-4 .print-grid { width: 100%; }
-  .print-per-4 .bingo-print-letter { font-size: 10pt; padding: 1pt 0; }
-  .print-per-4 .bingo-print-cell { font-size: 5.5pt; padding: 2pt; height: 0.66in; }
-  .print-per-4 .bingo-print-free { font-size: 8pt; }
+  .print-card-header h2 {
+    font-size: 26pt;
+    color: #000;
+  }
+  .print-card-header p {
+    font-size: 13pt;
+    color: #000;
+  }
+  .print-card-header {
+    margin-bottom: 0.25in;
+  }
+  .print-grid {
+    border: 3px solid #000;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .bingo-print-letter {
+    font-size: 28pt;
+    border: 1.5px solid #000;
+    padding: 4pt 0;
+  }
+  .bingo-print-cell {
+    border: 1.5px solid #000;
+    font-size: 12pt;
+    padding: 6pt;
+    color: #000;
+    aspect-ratio: auto;
+    height: 1.4in;
+  }
+  .bingo-print-free {
+    font-size: 20pt;
+  }
+
+  /* Explicit page groups keep incomplete batches and 4-up grids together. */
+  .print-sheet {
+    height: 10in;
+    max-width: none;
+    margin: 0;
+    gap: 0.25in;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-after: page;
+    page-break-after: always;
+  }
+  .print-sheet:last-child { break-after: auto; page-break-after: auto; }
+  .print-sheet .print-card {
+    height: 100%;
+    min-width: 0;
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .print-layout-2, .print-layout-4 {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+  .print-layout-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .print-layout-2 .print-card-header h2 { font-size: 18pt; }
+  .print-layout-2 .print-card-header p { font-size: 10pt; }
+  .print-layout-2 .print-card-header { margin-bottom: 0.1in; }
+  .print-layout-2 .bingo-print-letter { font-size: 18pt; padding: 2pt 0; }
+  .print-layout-2 .bingo-print-cell { height: 0.68in; font-size: 10pt; padding: 4pt; }
+  .print-layout-2 .bingo-print-free { font-size: 15pt; }
+  .print-layout-4 .print-card-header h2 { font-size: 13pt; letter-spacing: 0.03em; }
+  .print-layout-4 .print-card-header p { font-size: 9pt; }
+  .print-layout-4 .print-card-header { margin-bottom: 0.1in; }
+  .print-layout-4 .bingo-print-letter { font-size: 16pt; padding: 2pt 0; }
+  .print-layout-4 .bingo-print-cell { height: 0.65in; font-size: 8pt; padding: 3pt; }
+  .print-layout-4 .bingo-print-free { font-size: 13pt; }
 }
