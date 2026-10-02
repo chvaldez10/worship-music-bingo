@@ -188,8 +188,8 @@
 
   /* 2 cards per page */
   .print-per-2 .print-card { height: 4.7in; }
-  .print-per-2 .print-card:nth-child(odd) { break-after: page; page-break-after: always; }
-  .print-per-2 .print-card:nth-child(even) { break-after: auto; page-break-after: auto; }
+  .print-per-2 .print-card:nth-child(odd) { break-after: auto; page-break-after: auto; }
+  .print-per-2 .print-card:nth-child(even) { break-after: page; page-break-after: always; }
   .print-per-2 .print-card-header h2 { font-size: 18pt; }
   .print-per-2 .print-card-header p { font-size: 10pt; }
   .print-per-2 .print-card-header { margin-bottom: 0.1in; }
