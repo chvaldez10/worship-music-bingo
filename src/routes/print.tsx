@@ -18,7 +18,7 @@ export const Route = createFileRoute("/print")({
 });
 
 function PrintPage() {
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(4);
   const [cards, setCards] = useState<Cell[][]>([]);
 
   return (
