@@ -9,16 +9,17 @@ export const Route = createFileRoute("/print")({
   head: () => ({
     meta: [
       { title: "Print Cards — Worship Music Bingo" },
-      { name: "description", content: "Generate 1, 2, or 4 uniquely numbered, randomized bingo cards per US Letter page." },
+      { name: "description", content: "Generate uniquely numbered, randomized bingo cards — print 1, 2, or 4 per US Letter page." },
       { property: "og:title", content: "Print Cards — Worship Music Bingo" },
-      { property: "og:description", content: "Generate 1, 2, or 4 uniquely numbered, randomized bingo cards per US Letter page." },
+      { property: "og:description", content: "Generate uniquely numbered, randomized bingo cards — print 1, 2, or 4 per US Letter page." },
     ],
   }),
   component: PrintPage,
 });
 
 function PrintPage() {
-  const [count, setCount] = useState(4);
+  const [count, setCount] = useState(10);
+  const [perPage, setPerPage] = useState(2);
   const [cards, setCards] = useState<Cell[][]>([]);
 
   return (
@@ -26,11 +27,13 @@ function PrintPage() {
       <PrintControls
         count={count}
         setCount={setCount}
+        perPage={perPage}
+        setPerPage={setPerPage}
         hasCards={cards.length > 0}
         onGenerate={() => setCards(Array.from({ length: count }, () => createBingoCard(SONGS)))}
       />
       {cards.length > 0 && (
-        <div className={`print-stack print-per-${count} mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3`}>
+        <div className={`print-stack print-per-${perPage} mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3`}>
           {cards.map((c, i) => (
             <PrintableCard key={i} cells={c} number={i + 1} />
           ))}
