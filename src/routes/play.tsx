@@ -12,6 +12,7 @@ import {
 import { BingoCard } from "@/components/bingo/BingoCard";
 import { PrintableCard } from "@/components/bingo/PrintableCard";
 import { Btn } from "@/components/ui-lite";
+import { PageLoading } from "@/components/PageLoading";
 
 export const Route = createFileRoute("/play")({
   head: () => ({
@@ -87,6 +88,8 @@ function PlayPage() {
     }
   };
 
+  if (!cells && !error) return <PageLoading message="Getting your bingo card ready…" />;
+
   return (
     <main className="mx-auto max-w-xl px-2 py-6 sm:px-4 sm:py-10">
       <div className="no-print">
@@ -110,11 +113,7 @@ function PlayPage() {
             {error}
           </p>
         )}
-        {cells ? (
-          <BingoCard cells={cells} marked={marked} winning={winning} onToggle={toggle} />
-        ) : (
-          !error && <div className="aspect-[5/5.4] w-full animate-pulse rounded-2xl bg-secondary" />
-        )}
+        {cells && <BingoCard cells={cells} marked={marked} winning={winning} onToggle={toggle} />}
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <Btn onClick={newCard}>New Card</Btn>

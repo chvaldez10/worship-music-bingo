@@ -3,6 +3,7 @@ import type { Prompt } from "@/data/game-prompts";
 import { ROUND_DURATIONS } from "@/lib/party-game";
 import { usePartyGame, type PromptCategory } from "@/hooks/use-party-game";
 import { Btn, Select } from "@/components/ui-lite";
+import { PageLoading } from "@/components/PageLoading";
 
 type Props = {
   gameId: string;
@@ -78,6 +79,8 @@ export function HostedPromptGame({
     } else dispatch({ type: "result", result, now: Date.now() });
     setRevealed(true);
   };
+
+  if (!loaded) return <PageLoading message="Getting your game ready…" />;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">

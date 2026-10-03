@@ -47,6 +47,34 @@ afterEach(() => {
 });
 
 describe("Database Charades content", () => {
+  it("keeps controls hidden until the catalog arrives and saved state is restored", async () => {
+    let resolve!: (catalog: ReturnType<typeof parseCharadesCatalog>) => void;
+    vi.mocked(loadCharadesCatalog).mockImplementation(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
+    render(<Page />);
+    expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByLabelText("Charades category")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start team turn" })).not.toBeInTheDocument();
+    await act(async () => resolve(parseCharadesCatalog(payload)));
+    expect(screen.getByLabelText("Charades category")).toBeEnabled();
+    expect(document.querySelector('[aria-busy="true"]')).toBeNull();
+  });
+
+  it("replaces the spinner with a playable game when the database times out", () => {
+    vi.useFakeTimers();
+    vi.mocked(loadCharadesCatalog).mockImplementation(() => new Promise(() => {}));
+    render(<Page />);
+    expect(screen.getByText("Loading game prompts…")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(8000));
+    expect(screen.getByRole("button", { name: "Start team turn" })).toBeEnabled();
+    expect(screen.getByText(/starter prompt list/)).toBeInTheDocument();
+    expect(document.querySelector('[aria-busy="true"]')).toBeNull();
+  });
+
   it("keeps a saved game from a removed category until a new timed turn is started", async () => {
     const state = partyReducer(initialPartyState(60, "old-category", true), {
       type: "turn-start",

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HostedPromptGame } from "@/components/games/HostedPromptGame";
 import { useCharadesCatalog } from "@/hooks/use-charades-catalog";
+import { PageLoading } from "@/components/PageLoading";
 
 export const Route = createFileRoute("/charades")({
   head: () => ({
@@ -20,15 +21,7 @@ const prompts: [] = [];
 
 function CharadesPage() {
   const content = useCharadesCatalog();
-  if (!content)
-    return (
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
-        <h1 className="font-display text-4xl sm:text-5xl">Charades</h1>
-        <p role="status" className="mt-4 text-muted-foreground">
-          Loading game prompts…
-        </p>
-      </main>
-    );
+  if (!content) return <PageLoading message="Loading game prompts…" />;
   return (
     <HostedPromptGame
       gameId="charades"

@@ -3,6 +3,7 @@ import { SONGS, validateSongs } from "@/data/songs";
 import { drawNext, restoreCalled } from "@/lib/caller";
 import { Btn } from "@/components/ui-lite";
 import { SongHistory } from "./SongHistory";
+import { LoadingState } from "@/components/PageLoading";
 
 const KEY = "wmb-caller-v1";
 const byId = new Map(SONGS.map((s) => [s.id, s]));
@@ -72,6 +73,8 @@ export function CallerDashboard() {
         {songError}
       </p>
     );
+
+  if (!loaded) return <LoadingState message="Getting your caller ready…" />;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Btn } from "@/components/ui-lite";
 import { useKaraoke } from "@/hooks/use-karaoke";
+import { PageLoading } from "@/components/PageLoading";
 import {
   karaokeLibrarySchema,
   KaraokeConflictError,
@@ -212,6 +213,8 @@ function KaraokePage() {
       };
     });
   }
+  if (!ready) return <PageLoading message="Loading your song library…" />;
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <h1 className="font-display text-4xl">My karaoke</h1>

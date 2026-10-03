@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
+  ClientOnly,
   Link,
   createRootRouteWithContext,
   useRouter,
@@ -13,6 +14,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteNav } from "../components/SiteNav";
+import { PageLoading } from "../components/PageLoading";
 
 function NotFoundComponent() {
   return (
@@ -124,7 +126,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <SiteNav />
-      <Outlet />
+      <ClientOnly fallback={<PageLoading />}>
+        <Outlet />
+      </ClientOnly>
     </QueryClientProvider>
   );
 }
