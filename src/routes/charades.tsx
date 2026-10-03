@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HostedPromptGame } from "@/components/games/HostedPromptGame";
-import { CHARADES_CATEGORIES, charadesPrompts } from "@/data/game-prompts";
+import { useCharadesCatalog } from "@/hooks/use-charades-catalog";
 
 export const Route = createFileRoute("/charades")({
   head: () => ({
@@ -9,20 +9,26 @@ export const Route = createFileRoute("/charades")({
       {
         name: "description",
         content:
-          "Act out Bible events, worship songs, and church activities with teams and a round timer.",
+          "Act out Bible events, characters, worship songs, and church activities with teams and a round timer.",
       },
     ],
   }),
   component: CharadesPage,
 });
 
-const categories = CHARADES_CATEGORIES.map((category) => ({
-  ...category,
-  prompts: charadesPrompts(category.id),
-}));
 const prompts: [] = [];
 
 function CharadesPage() {
+  const content = useCharadesCatalog();
+  if (!content)
+    return (
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
+        <h1 className="font-display text-4xl sm:text-5xl">Charades</h1>
+        <p role="status" className="mt-4 text-muted-foreground">
+          Loading game prompts…
+        </p>
+      </main>
+    );
   return (
     <HostedPromptGame
       gameId="charades"
@@ -37,7 +43,9 @@ function CharadesPage() {
         "When time runs out, the next team chooses its actor. Change categories between turns; no prompts repeat until restart.",
       ]}
       prompts={prompts}
-      categories={categories}
+      categories={content.categories}
+      {...(content.notice ? { contentNotice: content.notice } : {})}
+      detailLabel="Acting hint"
       instructions={[
         "Choose a category and let one actor from the active team reveal the prompt privately.",
         "Hide the prompt and start the timer. Act without speaking, singing, or spelling words.",

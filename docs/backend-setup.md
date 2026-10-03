@@ -33,8 +33,18 @@ content-admin access.
 - Categories: `bible = 1`, `songs = 2`, `church = 3`. Their slugs stay stable.
 - Bible prompts: `bible-N` → `N` (1–24).
 - Church prompts: `church-N` → `24 + N` (25–44).
-- The frontend still uses its existing string IDs. Converting its types,
-  local saves, and data loading is a separate integration step.
+- Charades reads categories, prompts (including `detail`), and the shared songs
+  from the database when the page opens. New categories appear automatically.
+  Existing prompt IDs stay compatible with tab saves; new non-song prompts use
+  `charades-N`. Song IDs keep the `song-NN` form. These remain frontend strings;
+  database primary keys are integers.
+- The Charades content list stays fixed during a visit so a content refresh cannot
+  reset a live turn. Reload between games to load edits. If loading fails or takes
+  more than eight seconds, it uses the last successful list cached on this device,
+  or the bundled starter list, and displays which fallback it is using.
+- Acting hints are shown below revealed Charades prompts and hidden along with
+  the title. Scores and timers still use tab-local saves. Other games and personal
+  karaoke retain their existing content and saving behavior.
 
 ## Repairing the incomplete initial setup
 

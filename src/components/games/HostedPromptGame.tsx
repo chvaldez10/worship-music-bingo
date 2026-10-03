@@ -14,6 +14,8 @@ type Props = {
   categories?: PromptCategory[];
   timedTurns?: boolean;
   teamTurnInstructions?: string[];
+  contentNotice?: string;
+  detailLabel?: string;
 };
 
 export function HostedPromptGame({
@@ -26,6 +28,8 @@ export function HostedPromptGame({
   categories,
   timedTurns = false,
   teamTurnInstructions,
+  contentNotice,
+  detailLabel,
 }: Props) {
   const { state, dispatch, loaded, storageError } = usePartyGame(
     gameId,
@@ -84,6 +88,11 @@ export function HostedPromptGame({
         <h1 className="mt-2 font-display text-4xl sm:text-5xl">{title}</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">{description}</p>
       </div>
+      {contentNotice && (
+        <p role="status" className="mb-4 rounded-xl bg-secondary p-4 text-sm">
+          {contentNotice}
+        </p>
+      )}
       {storageError && (
         <p role="status" className="mb-4 rounded-xl bg-secondary p-4 text-sm">
           {storageError}
@@ -163,8 +172,15 @@ export function HostedPromptGame({
                     <h2 className="font-display text-3xl break-words sm:text-4xl">
                       {state.current.prompt.title}
                     </h2>
-                    {state.current.prompt.detail && (
-                      <p className="mt-3 text-muted-foreground">{state.current.prompt.detail}</p>
+                    {state.current.prompt.detail?.trim() && (
+                      <p className="mt-3 max-w-prose text-base leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
+                        {detailLabel && (
+                          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide">
+                            {detailLabel}
+                          </span>
+                        )}
+                        {state.current.prompt.detail}
+                      </p>
                     )}
                   </>
                 ) : (
