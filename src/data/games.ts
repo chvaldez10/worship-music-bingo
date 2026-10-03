@@ -1,6 +1,15 @@
 /** Add future games here to include them in the hub. */
 export const GAMES = [
   {
+    id: "guess-the-song",
+    path: "/guess-the-song",
+    title: "Guess the Song",
+    shortTitle: "Guess the Song",
+    subtitle: "Listen & guess",
+    description: "Play songs on YouTube and award points as teams guess the titles.",
+    details: "1–8 teams · Scores saved on this device",
+  },
+  {
     id: "bingo",
     path: "/bingo",
     title: "Worship Bingo",

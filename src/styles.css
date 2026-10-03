@@ -294,6 +294,17 @@
 }
 
 /* Keyboard and motion preferences apply consistently across all games. */
+.loading-spinner {
+  animation: loading-turn 1s linear infinite;
+  transform-origin: center;
+}
+@keyframes loading-turn {
+  to { transform: rotate(360deg); }
+}
+@keyframes loading-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
 @layer base {
   :where(button, a, input, select, textarea):focus-visible {
     outline: 3px solid var(--primary);
@@ -308,6 +319,10 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Loading stays perceptible without rotation or rapid flashing. */
+  .loading-spinner {
+    animation: loading-fade 2s ease-in-out infinite !important;
   }
 }
 

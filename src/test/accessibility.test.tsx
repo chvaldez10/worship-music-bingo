@@ -34,6 +34,7 @@ describe("Accessible game pages", () => {
     "/charades",
     "/singing-bee",
     "/whos-the-leader",
+    "/guess-the-song",
     "/songs",
     "/karaoke",
   ])("has no automated semantic violations on %s", async (path) => {

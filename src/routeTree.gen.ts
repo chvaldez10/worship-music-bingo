@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BingoRouteImport } from './routes/bingo'
 import { Route as CallerRouteImport } from './routes/caller'
 import { Route as CharadesRouteImport } from './routes/charades'
+import { Route as GuessTheSongRouteImport } from './routes/guess-the-song'
 import { Route as KaraokeRouteImport } from './routes/karaoke'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrintRouteImport } from './routes/print'
@@ -38,6 +39,11 @@ const CallerRoute = CallerRouteImport.update({
 const CharadesRoute = CharadesRouteImport.update({
   id: '/charades',
   path: '/charades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuessTheSongRoute = GuessTheSongRouteImport.update({
+  id: '/guess-the-song',
+  path: '/guess-the-song',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KaraokeRoute = KaraokeRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
   '/charades': typeof CharadesRoute
+  '/guess-the-song': typeof GuessTheSongRoute
   '/karaoke': typeof KaraokeRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
   '/charades': typeof CharadesRoute
+  '/guess-the-song': typeof GuessTheSongRoute
   '/karaoke': typeof KaraokeRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
   '/charades': typeof CharadesRoute
+  '/guess-the-song': typeof GuessTheSongRoute
   '/karaoke': typeof KaraokeRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/caller'
     | '/charades'
+    | '/guess-the-song'
     | '/karaoke'
     | '/play'
     | '/print'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/caller'
     | '/charades'
+    | '/guess-the-song'
     | '/karaoke'
     | '/play'
     | '/print'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/caller'
     | '/charades'
+    | '/guess-the-song'
     | '/karaoke'
     | '/play'
     | '/print'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   BingoRoute: typeof BingoRoute
   CallerRoute: typeof CallerRoute
   CharadesRoute: typeof CharadesRoute
+  GuessTheSongRoute: typeof GuessTheSongRoute
   KaraokeRoute: typeof KaraokeRoute
   PlayRoute: typeof PlayRoute
   PrintRoute: typeof PrintRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/charades'
       fullPath: '/charades'
       preLoaderRoute: typeof CharadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guess-the-song': {
+      id: '/guess-the-song'
+      path: '/guess-the-song'
+      fullPath: '/guess-the-song'
+      preLoaderRoute: typeof GuessTheSongRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/karaoke': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   BingoRoute: BingoRoute,
   CallerRoute: CallerRoute,
   CharadesRoute: CharadesRoute,
+  GuessTheSongRoute: GuessTheSongRoute,
   KaraokeRoute: KaraokeRoute,
   PlayRoute: PlayRoute,
   PrintRoute: PrintRoute,

@@ -8,11 +8,9 @@ export function LoadingState({ message = "Loading page…" }: { message?: string
       aria-busy="true"
       className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 py-12 text-center"
     >
-      <LoaderCircle
-        aria-hidden="true"
-        className="size-10 animate-spin text-primary motion-reduce:animate-none"
-        strokeWidth={2}
-      />
+      <span className="loading-spinner inline-flex text-primary" aria-hidden="true">
+        <LoaderCircle aria-hidden="true" className="size-10" strokeWidth={2} />
+      </span>
       <p className="text-base text-muted-foreground">{message}</p>
     </div>
   );

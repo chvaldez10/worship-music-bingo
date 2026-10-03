@@ -40,7 +40,13 @@ describe("App routing", () => {
     );
     expect(navigation.queryByRole("link", { name: "Charades" })).not.toBeInTheDocument();
     const hub = within(screen.getByRole("main"));
-    for (const path of ["/bingo", "/charades", "/singing-bee", "/whos-the-leader"])
+    for (const path of [
+      "/bingo",
+      "/charades",
+      "/singing-bee",
+      "/whos-the-leader",
+      "/guess-the-song",
+    ])
       expect(hub.getAllByRole("link").some((link) => link.getAttribute("href") === path)).toBe(
         true,
       );
