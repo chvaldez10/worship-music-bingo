@@ -10,7 +10,7 @@ export function SiteNav() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isBingo = ["/bingo", "/play", "/caller", "/print"].includes(pathname);
   return (
-    <header className="no-print top-0 z-20 border-b border-border bg-background/85 backdrop-blur sm:sticky">
+    <header className="no-print top-0 z-20 border-b border-border bg-background/85 backdrop-blur lg:sticky">
       <nav
         aria-label="Games"
         className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3"

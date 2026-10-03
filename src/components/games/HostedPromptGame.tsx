@@ -4,6 +4,7 @@ import { ROUND_DURATIONS } from "@/lib/party-game";
 import { usePartyGame, type PromptCategory } from "@/hooks/use-party-game";
 import { Btn, Select } from "@/components/ui-lite";
 import { PageLoading } from "@/components/PageLoading";
+import { PromptCard } from "./PromptCard";
 
 type Props = {
   gameId: string;
@@ -168,52 +169,18 @@ export function HostedPromptGame({
                 ? `${roundTeam?.name.trim() || "Unnamed team"}'s turn`
                 : `Up next: ${active?.name.trim() || "Unnamed team"}`}
             </p>
-            <div className="mt-4 flex min-h-48 flex-col items-center justify-center rounded-2xl bg-secondary p-6 text-center">
-              {state.current ? (
-                revealed ? (
-                  <>
-                    <h2 className="font-display text-3xl break-words sm:text-4xl">
-                      {state.current.prompt.title}
-                    </h2>
-                    {state.current.prompt.detail?.trim() && (
-                      <p className="mt-3 max-w-prose text-base leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
-                        {detailLabel && (
-                          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide">
-                            {detailLabel}
-                          </span>
-                        )}
-                        {state.current.prompt.detail}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <h2 className="font-display text-3xl">Prompt hidden</h2>
-                    <p className="mt-2 text-muted-foreground">
-                      Let only the actor or host see the prompt.
-                    </p>
-                  </>
-                )
-              ) : (
-                <>
-                  <h2 className="font-display text-3xl">Ready to play?</h2>
-                  <p className="mt-2 text-muted-foreground">
-                    {timed
-                      ? "Choose an actor, then start the team turn."
-                      : "Draw your first prompt to begin."}
-                  </p>
-                </>
-              )}
-            </div>
-            {state.current && (
-              <Btn
-                variant="outline"
-                className="mt-4"
-                onClick={() => setRevealed((value) => !value)}
-              >
-                {revealed ? "Hide prompt" : "Reveal prompt"}
-              </Btn>
-            )}
+            <PromptCard
+              title={state.current?.prompt.title}
+              detail={state.current?.prompt.detail}
+              detailLabel={detailLabel}
+              revealed={revealed}
+              onToggle={() => setRevealed((value) => !value)}
+              emptyDetail={
+                timed
+                  ? "Choose an actor, then start the team turn."
+                  : "Draw your first prompt to begin."
+              }
+            />
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <span
                 role="timer"
@@ -379,7 +346,7 @@ export function HostedPromptGame({
                       onChange={(e) =>
                         dispatch({ type: "rename", id: team.id, name: e.target.value })
                       }
-                      className="w-full min-w-0 rounded-lg border border-border bg-card px-3 py-2 font-semibold"
+                      className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-card px-3 py-2 font-semibold"
                     />
                   </label>
                   <output

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/bingo")({
 
 function Index() {
   return (
-    <main className="relative mx-auto flex min-h-[calc(100vh-60px)] max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
+    <main className="relative mx-auto flex min-h-[calc(100dvh-60px)] max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
       <div className="hero-glow" aria-hidden />
       <p className="mb-4 text-sm font-semibold tracking-[0.2em] text-primary uppercase">
         A night of songs & fellowship
@@ -37,7 +37,7 @@ function Index() {
       >
         Play Bingo
       </Link>
-      <div className="mt-4 flex gap-3">
+      <div className="mt-4 flex flex-wrap justify-center gap-3">
         <Link
           to="/caller"
           className="rounded-full border-2 border-border bg-card px-6 py-2.5 font-semibold text-foreground hover:bg-secondary"

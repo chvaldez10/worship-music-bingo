@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Grid3X3, Drama, MicVocal, ArrowRight } from "lucide-react";
+import { Grid3X3, Drama, MicVocal, ArrowRight, UsersRound } from "lucide-react";
 import { GAMES } from "@/data/games";
 
 export const Route = createFileRoute("/")({
@@ -8,13 +8,19 @@ export const Route = createFileRoute("/")({
       { title: "Church Camp Games" },
       {
         name: "description",
-        content: "Bring everyone together with Worship Bingo, Charades, and Worship Singing Bee.",
+        content:
+          "Bring everyone together with Worship Bingo, Charades, Worship Singing Bee, and Who’s the Leader?",
       },
     ],
   }),
   component: Index,
 });
-const icons = { bingo: Grid3X3, charades: Drama, "singing-bee": MicVocal };
+const icons = {
+  bingo: Grid3X3,
+  charades: Drama,
+  "singing-bee": MicVocal,
+  "whos-the-leader": UsersRound,
+};
 
 function Index() {
   return (
@@ -31,7 +37,7 @@ function Index() {
           Bring your group together. Pick a game, gather your teams, and let the fun begin.
         </p>
       </div>
-      <div className="mt-12 grid gap-5 md:grid-cols-3">
+      <div className="mt-12 grid gap-5 md:grid-cols-2">
         {GAMES.map((game) => {
           const Icon = icons[game.id];
           return (

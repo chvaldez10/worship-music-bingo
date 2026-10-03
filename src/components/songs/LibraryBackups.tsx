@@ -63,7 +63,7 @@ export function LibraryBackups({
             {pendingImport.setlists.length} setlists? Export your current library first if you want
             to keep it.
           </p>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <Btn
               onClick={() => {
                 if (save(() => pendingImport, true)) {

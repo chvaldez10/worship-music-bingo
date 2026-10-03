@@ -303,10 +303,10 @@ export function SongLibraryPage() {
             />
           </div>
         </div>
-        <div className="md:max-h-[65vh] md:overflow-y-auto">
-          <table role="table" className="block w-full text-left text-sm md:table">
+        <div className="lg:max-h-[65vh] lg:overflow-y-auto">
+          <table role="table" className="block w-full text-left text-sm lg:table">
             <caption className="sr-only">Your songs, metadata, and personal ratings</caption>
-            <thead className="sr-only bg-background md:not-sr-only md:sticky md:top-0 md:z-10 md:table-header-group">
+            <thead className="sr-only bg-background lg:not-sr-only lg:sticky lg:top-0 lg:z-10 lg:table-header-group">
               <tr>
                 {["Song", "Details", "Your rating", ""].map((label, index) => (
                   <th
@@ -319,14 +319,14 @@ export function SongLibraryPage() {
                 ))}
               </tr>
             </thead>
-            <tbody role="rowgroup" className="block divide-y divide-border md:table-row-group">
+            <tbody role="rowgroup" className="block divide-y divide-border lg:table-row-group">
               {songs.map((song) => (
                 <tr
                   role="row"
                   key={song.id}
-                  className="grid grid-cols-2 gap-y-3 p-5 transition-colors hover:bg-background/60 md:table-row md:p-0"
+                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-3 p-5 transition-colors hover:bg-background/60 lg:table-row lg:p-0"
                 >
-                  <td role="cell" className="col-span-2 min-w-0 md:w-[38%] md:px-6 md:py-4">
+                  <td role="cell" className="col-span-2 min-w-0 lg:w-[38%] lg:px-6 lg:py-4">
                     <strong
                       id={`song-title-${song.id}`}
                       className="block text-base font-semibold [overflow-wrap:anywhere]"
@@ -344,17 +344,17 @@ export function SongLibraryPage() {
                       </div>
                     )}
                   </td>
-                  <td role="cell" className="col-span-2 min-w-0 md:w-[25%] md:px-6 md:py-4">
+                  <td role="cell" className="col-span-2 min-w-0 lg:w-[25%] lg:px-6 lg:py-4">
                     <div className="flex flex-wrap gap-1.5">
                       {song.genre && (
-                        <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium">
+                        <span className="max-w-full rounded-full bg-secondary px-2.5 py-1 text-xs font-medium [overflow-wrap:anywhere]">
                           {song.genre}
                         </span>
                       )}
                       {song.tags.map((tag, index) => (
                         <span
                           key={`${tag}-${index}`}
-                          className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground"
+                          className="max-w-full rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground [overflow-wrap:anywhere]"
                         >
                           {tag}
                         </span>
@@ -374,11 +374,11 @@ export function SongLibraryPage() {
                         <span className="text-xs text-muted-foreground">No details yet</span>
                       )}
                   </td>
-                  <td role="cell" className="min-w-0 md:px-6 md:py-4">
-                    <div className="max-w-32 [&>span]:mt-0">
+                  <td role="cell" className="min-w-0 lg:px-6 lg:py-4">
+                    <div className="min-w-0 max-w-36 [&>span]:mt-0">
                       <Select
                         aria-label={`Rating for ${song.title}`}
-                        className="min-h-11 rounded-xl bg-card py-2 pl-3 pr-9 text-sm"
+                        className="min-h-11 rounded-xl bg-card py-2 pl-3 pr-12 text-base lg:text-sm"
                         disabled={disabled}
                         value={song.rating ?? ""}
                         onChange={(event) => {
@@ -400,13 +400,13 @@ export function SongLibraryPage() {
                       </Select>
                     </div>
                   </td>
-                  <td role="cell" className="min-w-0 md:px-4 md:py-4">
+                  <td role="cell" className="min-w-0 lg:px-4 lg:py-4">
                     <div className="flex justify-end gap-1">
                       <Btn
                         aria-describedby={`song-title-${song.id}`}
                         disabled={disabled}
                         variant="ghost"
-                        className="rounded-xl px-3"
+                        className="rounded-xl px-2 sm:px-3"
                         onClick={(event) => {
                           opener.current = event.currentTarget;
                           setCreatingSong(false);

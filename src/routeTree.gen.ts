@@ -18,6 +18,7 @@ import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrintRouteImport } from './routes/print'
 import { Route as SingingBeeRouteImport } from './routes/singing-bee'
 import { Route as SongsRouteImport } from './routes/songs'
+import { Route as WhosTheLeaderRouteImport } from './routes/whos-the-leader'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const SongsRoute = SongsRouteImport.update({
   path: '/songs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WhosTheLeaderRoute = WhosTheLeaderRouteImport.update({
+  id: '/whos-the-leader',
+  path: '/whos-the-leader',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
   '/songs': typeof SongsRoute
+  '/whos-the-leader': typeof WhosTheLeaderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
   '/songs': typeof SongsRoute
+  '/whos-the-leader': typeof WhosTheLeaderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
   '/songs': typeof SongsRoute
+  '/whos-the-leader': typeof WhosTheLeaderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/singing-bee'
     | '/songs'
+    | '/whos-the-leader'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/singing-bee'
     | '/songs'
+    | '/whos-the-leader'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/singing-bee'
     | '/songs'
+    | '/whos-the-leader'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   PrintRoute: typeof PrintRoute
   SingingBeeRoute: typeof SingingBeeRoute
   SongsRoute: typeof SongsRoute
+  WhosTheLeaderRoute: typeof WhosTheLeaderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SongsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/whos-the-leader': {
+      id: '/whos-the-leader'
+      path: '/whos-the-leader'
+      fullPath: '/whos-the-leader'
+      preLoaderRoute: typeof WhosTheLeaderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrintRoute: PrintRoute,
   SingingBeeRoute: SingingBeeRoute,
   SongsRoute: SongsRoute,
+  WhosTheLeaderRoute: WhosTheLeaderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

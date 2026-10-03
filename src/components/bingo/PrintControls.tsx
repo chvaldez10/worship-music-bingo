@@ -62,7 +62,7 @@ export function PrintControls({
           aria-describedby={error ? "print-error" : undefined}
           value={count}
           onChange={(e) => setCount(e.target.value)}
-          className="h-12 w-24 rounded-full border-2 border-border bg-background px-4 text-sm font-semibold"
+          className="h-12 w-24 rounded-full border-2 border-border bg-background px-4 text-base font-semibold"
           aria-label="Custom number of cards"
         />
       </div>

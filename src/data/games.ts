@@ -1,4 +1,4 @@
-/** Add future games here to include them in the hub and navigation. */
+/** Add future games here to include them in the hub. */
 export const GAMES = [
   {
     id: "bingo",
@@ -29,5 +29,15 @@ export const GAMES = [
     description:
       "The host starts a worship song. Your team carries it on before the timer runs out.",
     details: "2–6 teams · Shared worship song bank",
+  },
+  {
+    id: "whos-the-leader",
+    path: "/whos-the-leader",
+    title: "Who’s the Leader?",
+    shortTitle: "Who’s the Leader?",
+    subtitle: "Copy & discover",
+    description:
+      "Copy a secret leader’s changing actions while the guesser tries to spot who is in charge.",
+    details: "Whole-group circle · No equipment",
   },
 ] as const;

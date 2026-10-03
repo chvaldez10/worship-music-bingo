@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Btn } from "@/components/ui-lite";
+import { Btn, Select } from "@/components/ui-lite";
 import { useKaraoke } from "@/hooks/use-karaoke";
 import { PageLoading } from "@/components/PageLoading";
 import { LibraryBackups } from "@/components/songs/LibraryBackups";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/karaoke")({
   component: KaraokePage,
 });
 const inputClass =
-  "min-h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-sm";
+  "min-h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-base";
 function KaraokePage() {
   const { library, ready, error, blocked, save, exportLibrary, setError } = useKaraoke();
   const [deletingList, setDeletingList] = useState<number | null>(null);
@@ -102,7 +102,7 @@ function KaraokePage() {
             }
           }}
         >
-          <label className="min-w-0 grow">
+          <label className="min-w-0 flex-1 basis-full sm:basis-0">
             <span className="sr-only">New setlist name</span>
             <input
               required
@@ -121,8 +121,7 @@ function KaraokePage() {
           <>
             <label className="mt-4 block">
               Choose setlist
-              <select
-                className={inputClass}
+              <Select
                 value={currentList.id}
                 onChange={(event) => setSelected(Number(event.target.value))}
               >
@@ -131,7 +130,7 @@ function KaraokePage() {
                     {list.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <form
               className="mt-4 flex flex-wrap items-end gap-2"
@@ -142,12 +141,11 @@ function KaraokePage() {
                 if (changeList((ids) => [...ids, id])) setNotice("Song added to your setlist.");
               }}
             >
-              <label className="min-w-0 grow">
+              <label className="min-w-0 flex-1 basis-full sm:basis-0">
                 Add a song
-                <select
+                <Select
                   name="songId"
                   required
-                  className={inputClass}
                   disabled={disabled || !library.songs.length}
                   defaultValue=""
                 >
@@ -160,7 +158,7 @@ function KaraokePage() {
                       {song.artist ? ` — ${song.artist}` : ""}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
               <Btn type="submit" disabled={disabled || !library.songs.length}>
                 Add to setlist
@@ -235,7 +233,7 @@ function KaraokePage() {
                   }));
               }}
             >
-              <label className="min-w-0 grow">
+              <label className="min-w-0 flex-1 basis-full sm:basis-0">
                 <span className="sr-only">Setlist name</span>
                 <input
                   name="name"
@@ -258,8 +256,10 @@ function KaraokePage() {
               Delete setlist
             </Btn>
             {deletingList === currentList.id && (
-              <div className="mt-3">
-                <p>Delete this setlist? Your songs and ratings will stay in your library.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <p className="basis-full">
+                  Delete this setlist? Your songs and ratings will stay in your library.
+                </p>
                 <Btn
                   variant="danger"
                   onClick={() => {
@@ -299,8 +299,7 @@ function KaraokePage() {
         </p>
         <label className="mt-4 block max-w-xs">
           Compare by
-          <select
-            className={inputClass}
+          <Select
             value={dimension}
             onChange={(event) => setDimension(event.target.value as typeof dimension)}
           >
@@ -308,7 +307,7 @@ function KaraokePage() {
             <option value="tag">Tags</option>
             <option value="decade">Decade</option>
             <option value="tempo">Tempo</option>
-          </select>
+          </Select>
         </label>
         {summary.length ? (
           <table className="mt-4 w-full text-left text-sm">
