@@ -8,6 +8,7 @@ import { CallerDashboard } from "@/components/bingo/CallerDashboard";
 import { Route as PlayRoute } from "@/routes/play";
 import { Route as SingingRoute } from "@/routes/singing-bee";
 import { Route as KaraokeRoute } from "@/routes/karaoke";
+import { SongLibraryPage } from "@/components/songs/SongLibraryPage";
 import { getRouter } from "@/router";
 import { SONGS } from "@/data/songs";
 import { Route as RootRoute } from "@/routes/__root";
@@ -28,7 +29,8 @@ describe("Page readiness", () => {
     ["bingo player", Play, "FREE"],
     ["bingo caller", CallerDashboard, "Draw Next Song"],
     ["singing bee", SingingBee, "Draw next prompt"],
-    ["karaoke", Karaoke, "Add song"],
+    ["karaoke", Karaoke, "Create setlist"],
+    ["song library", SongLibraryPage, "Add song"],
   ] as const)("keeps %s controls hidden until saved state has loaded", async (_, Page, button) => {
     const initial = renderToString(<Page />);
     expect(initial).toContain('role="status"');

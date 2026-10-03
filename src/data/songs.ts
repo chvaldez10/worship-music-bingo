@@ -8,6 +8,7 @@ export type Song = {
   tags?: string[];
   releaseYear?: number;
   bpm?: number;
+  youtubeUrls?: string[];
 };
 
 /** IDs define identity; matching titles with different IDs are allowed. */

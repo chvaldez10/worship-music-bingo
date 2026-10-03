@@ -20,8 +20,10 @@ import {
 } from "@/lib/karaoke";
 import { useKaraoke } from "@/hooks/use-karaoke";
 import { Route } from "@/routes/karaoke";
+import { SongLibraryPage } from "@/components/songs/SongLibraryPage";
 
-const Page = Route.options.component as ComponentType;
+const KaraokePage = Route.options.component as ComponentType;
+const Page = SongLibraryPage;
 afterEach(() => {
   cleanup();
   localStorage.clear();
@@ -130,33 +132,47 @@ describe("Local karaoke persistence", () => {
 
 describe("Personal karaoke page", () => {
   it("adds metadata, rates a song, builds and reorders a setlist, and persists it", () => {
-    render(<Page />);
+    const first = render(<Page />);
     fireEvent.click(screen.getByRole("button", { name: "Add song" }));
     fireEvent.change(screen.getByLabelText("Title"), { target: { value: "My Song" } });
     fireEvent.change(screen.getByLabelText("Genre"), { target: { value: "Pop" } });
     fireEvent.change(screen.getByLabelText("BPM"), { target: { value: "120" } });
     fireEvent.change(screen.getByLabelText("Release year"), { target: { value: "1999" } });
+    fireEvent.change(screen.getByLabelText("YouTube links"), {
+      target: { value: "https://youtu.be/abcdefghijk\nhttps://youtu.be/lmnopqrstuv" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save song" }));
     fireEvent.change(screen.getByLabelText("Rating for My Song"), { target: { value: "5" } });
+    first.unmount();
+    const setlists = render(<KaraokePage />);
+    expect(screen.queryByRole("heading", { name: /Song library/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("New setlist name"), { target: { value: "Friday" } });
     fireEvent.click(screen.getByRole("button", { name: "Create setlist" }));
-    const row = screen.getByText("My Song", { selector: "strong" }).closest("tr")!;
-    fireEvent.click(within(row).getByRole("button", { name: "Add to setlist" }));
-    const firstRow = screen.getByText("Goodness of God", { selector: "strong" }).closest("tr")!;
-    fireEvent.click(within(firstRow).getByRole("button", { name: "Add to setlist" }));
+    for (const id of [68, 1]) {
+      fireEvent.change(screen.getByLabelText("Add a song"), { target: { value: String(id) } });
+      fireEvent.click(screen.getByRole("button", { name: "Add to setlist" }));
+    }
     fireEvent.click(screen.getByLabelText("Move Goodness of God at position 2 up"));
     expect(screen.getByText("1. Goodness of God")).toBeInTheDocument();
     expect(screen.getByText("2. My Song")).toBeInTheDocument();
+    const videos = screen.getAllByRole("link", { name: /Open My Song on YouTube/ });
+    expect(videos.map((link) => link.getAttribute("href"))).toEqual([
+      "https://youtu.be/abcdefghijk",
+      "https://youtu.be/lmnopqrstuv",
+    ]);
     expect(screen.getByText("5.0 / 5")).toBeInTheDocument();
     const library = karaokeLibrarySchema.parse(
       JSON.parse(localStorage.getItem(KARAOKE_STORAGE_KEY)!),
     );
     expect(library.setlists[0]?.songIds).toEqual([1, 68]);
     expect(library.songs.find((song) => song.id === 68)?.rating).toBe(5);
+    setlists.unmount();
+    render(<Page />);
+    const row = screen.getByText("My Song", { selector: "strong" }).closest("tr")!;
     fireEvent.click(within(row).getByRole("button", { name: "Delete" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
     expect(screen.queryByLabelText("Rating for My Song")).not.toBeInTheDocument();
-    expect(screen.queryByText("2. My Song")).not.toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem(KARAOKE_STORAGE_KEY)!).setlists[0].songIds).toEqual([1]);
   });
 });
 

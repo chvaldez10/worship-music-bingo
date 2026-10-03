@@ -206,6 +206,7 @@ export type Database = {
       };
       songs: {
         Row: {
+          youtube_urls: string[];
           genre: string | null;
           tags: string[];
           release_year: number | null;
@@ -217,6 +218,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          youtube_urls?: string[];
           genre?: string | null;
           tags?: string[];
           release_year?: number | null;
@@ -228,6 +230,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          youtube_urls?: string[];
           genre?: string | null;
           tags?: string[];
           release_year?: number | null;
@@ -245,6 +248,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      valid_song_youtube_urls: { Args: { urls: string[] }; Returns: boolean };
       is_content_admin: { Args: { _user_id: string }; Returns: boolean };
     };
     Enums: {

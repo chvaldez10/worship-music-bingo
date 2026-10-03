@@ -1,18 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Btn } from "@/components/ui-lite";
 import { useKaraoke } from "@/hooks/use-karaoke";
 import { PageLoading } from "@/components/PageLoading";
-import {
-  karaokeLibrarySchema,
-  KaraokeConflictError,
-  karaokeSongSchema,
-  moveSong,
-  nextId,
-  tasteSummary,
-  type KaraokeSong,
-  type KaraokeLibrary,
-} from "@/lib/karaoke";
+import { LibraryBackups } from "@/components/songs/LibraryBackups";
+import { YouTubeLinks } from "@/components/songs/YouTubeLinks";
+import { KaraokeConflictError, moveSong, nextId, tasteSummary } from "@/lib/karaoke";
 
 export const Route = createFileRoute("/karaoke")({
   head: () => ({ meta: [{ title: "My Karaoke • Church Camp Games" }] }),
@@ -20,182 +13,17 @@ export const Route = createFileRoute("/karaoke")({
 });
 const inputClass =
   "min-h-11 w-full min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-sm";
-function SongForm({
-  song,
-  onSave,
-  onCancel,
-}: {
-  song: KaraokeSong;
-  onSave: (song: KaraokeSong) => boolean;
-  onCancel: () => void;
-}) {
-  const [error, setError] = useState("");
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const optionalNumber = (name: string) =>
-      String(data.get(name)).trim() ? Number(data.get(name)) : null;
-    const parsed = karaokeSongSchema.safeParse({
-      id: song.id,
-      title: data.get("title"),
-      artist: data.get("artist"),
-      genre: data.get("genre"),
-      tags: [
-        ...new Set(
-          String(data.get("tags"))
-            .split(",")
-            .map((tag) => tag.trim().toLowerCase())
-            .filter(Boolean),
-        ),
-      ],
-      releaseYear: optionalNumber("year"),
-      bpm: optionalNumber("bpm"),
-      rating: song.rating,
-    });
-    if (!parsed.success) {
-      setError("Check the song details. Use up to 20 tags and a BPM greater than 0 and up to 400.");
-      return;
-    }
-    if (onSave(parsed.data)) onCancel();
-  }
-  return (
-    <form onSubmit={submit} className="mt-4 rounded-2xl border border-border bg-card p-5">
-      <h2 className="font-display text-2xl">{song.title ? "Edit song" : "Add song"}</h2>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <label>
-          Title
-          <input
-            name="title"
-            required
-            maxLength={200}
-            defaultValue={song.title}
-            className={inputClass}
-          />
-        </label>
-        <label>
-          Artist
-          <input name="artist" maxLength={200} defaultValue={song.artist} className={inputClass} />
-        </label>
-        <label>
-          Genre
-          <input
-            name="genre"
-            maxLength={80}
-            defaultValue={song.genre}
-            placeholder="e.g. Pop, Worship, Country"
-            className={inputClass}
-          />
-        </label>
-        <label>
-          Tags
-          <input
-            name="tags"
-            defaultValue={song.tags.join(", ")}
-            placeholder="e.g. nostalgic, upbeat"
-            className={inputClass}
-          />
-          <span className="text-xs text-muted-foreground">Separate tags with commas.</span>
-        </label>
-        <label>
-          Release year
-          <input
-            name="year"
-            type="number"
-            min={1000}
-            max={2100}
-            step={1}
-            defaultValue={song.releaseYear ?? ""}
-            className={inputClass}
-          />
-        </label>
-        <label>
-          BPM
-          <input
-            name="bpm"
-            type="number"
-            min={0.01}
-            max={400}
-            step={0.01}
-            defaultValue={song.bpm ?? ""}
-            className={inputClass}
-          />
-        </label>
-      </div>
-      <p className="mt-3 text-xs text-muted-foreground">
-        Only the title is required. Use the year and tempo of the version you sing; leave unknown
-        details blank.
-      </p>
-      {error && (
-        <p role="alert" className="mt-3 text-destructive">
-          {error}
-        </p>
-      )}
-      <div className="mt-4 flex gap-2">
-        <Btn type="submit">Save song</Btn>
-        <Btn type="button" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Btn>
-      </div>
-    </form>
-  );
-}
 function KaraokePage() {
   const { library, ready, error, blocked, save, exportLibrary, setError } = useKaraoke();
-  const [search, setSearch] = useState("");
-  const [editing, setEditing] = useState<KaraokeSong | null>(null);
-  const [creatingSong, setCreatingSong] = useState(false);
   const [deletingList, setDeletingList] = useState<number | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [listName, setListName] = useState("");
-  const [pendingImport, setPendingImport] = useState<KaraokeLibrary | null>(null);
-  const [deleting, setDeleting] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
   const [dimension, setDimension] = useState<"genre" | "decade" | "tempo" | "tag">("genre");
   const disabled = !ready || blocked;
   const currentList = library.setlists.find((list) => list.id === selected) ?? library.setlists[0];
-  const query = search.trim().toLowerCase();
-  const songs = library.songs.filter((song) =>
-    [song.title, song.artist, song.genre, ...song.tags].join(" ").toLowerCase().includes(query),
-  );
   const summary = tasteSummary(library.songs, dimension);
   const rated = library.songs.filter((song) => song.rating !== null).length;
-  const newSong = () => {
-    setCreatingSong(true);
-    setEditing({
-      id: nextId(library.songs),
-      title: "",
-      artist: "",
-      genre: "",
-      tags: [],
-      releaseYear: null,
-      bpm: null,
-      rating: null,
-    });
-  };
-  function saveSong(song: KaraokeSong) {
-    return save((current) => {
-      if (!creatingSong) {
-        const existing = current.songs.find((item) => item.id === song.id);
-        if (
-          !existing ||
-          JSON.stringify({ ...existing, rating: null }) !==
-            JSON.stringify({ ...editing, rating: null })
-        ) {
-          throw new KaraokeConflictError(
-            "This song changed in another tab. Cancel and reopen it before saving.",
-          );
-        }
-      }
-      return {
-        ...current,
-        songs: !creatingSong
-          ? current.songs.map((item) =>
-              item.id === song.id ? { ...song, rating: item.rating } : item,
-            )
-          : [...current.songs, { ...song, id: nextId(current.songs) }],
-      };
-    });
-  }
   function changeList(update: (ids: number[]) => number[]) {
     if (!currentList) return false;
     return save((current) => {
@@ -213,73 +41,34 @@ function KaraokePage() {
       };
     });
   }
-  if (!ready) return <PageLoading message="Loading your song library…" />;
 
+  if (!ready) return <PageLoading message="Loading your setlists…" />;
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <h1 className="font-display text-4xl">My karaoke</h1>
       <p className="mt-3 text-muted-foreground">
-        Build a setlist, rate songs, and discover the styles and tempos you enjoy.
+        Build a setlist and discover the styles and tempos you enjoy.
       </p>
       <p className="mt-2 text-sm text-muted-foreground">
         Saved on this device, separate from camp games. Export a backup to keep or move your
         library. Cloud saving isn’t connected yet.
       </p>
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <Btn disabled={disabled} onClick={newSong}>
-          Add song
-        </Btn>
-        <Btn variant="outline" disabled={!ready} onClick={exportLibrary}>
-          Export backup
-        </Btn>
-        <label className="rounded-full border-2 border-border px-4 py-2 text-sm font-semibold">
-          Import backup
-          <input
-            aria-label="Import karaoke backup"
-            type="file"
-            accept=".json,application/json"
-            disabled={!ready}
-            className="mt-1 block min-h-11 max-w-60 text-xs"
-            onChange={async (event) => {
-              const file = event.currentTarget.files?.[0];
-              event.currentTarget.value = "";
-              if (!file) return;
-              try {
-                if (file.size > 10_000_000) throw new Error("too large");
-                setPendingImport(karaokeLibrarySchema.parse(JSON.parse(await file.text())));
-              } catch {
-                setError("This file is not a valid karaoke backup. Your library is unchanged.");
-              }
-            }}
-          />
-        </label>
-      </div>
-      {pendingImport && (
-        <div className="mt-4 rounded-xl border border-border bg-card p-4">
-          <p>
-            Replace this device’s library with {pendingImport.songs.length} songs and{" "}
-            {pendingImport.setlists.length} setlists? Export your current library first if you want
-            to keep it.
-          </p>
-          <div className="mt-3 flex gap-2">
-            <Btn
-              onClick={() => {
-                if (save(() => pendingImport, true)) {
-                  setPendingImport(null);
-                  setEditing(null);
-                  setSelected(null);
-                  setNotice("Backup imported.");
-                }
-              }}
-            >
-              Replace library
-            </Btn>
-            <Btn variant="ghost" onClick={() => setPendingImport(null)}>
-              Cancel import
-            </Btn>
-          </div>
-        </div>
-      )}
+      <a
+        href="/songs"
+        className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
+      >
+        Manage songs & YouTube links →
+      </a>
+      <LibraryBackups
+        ready={ready}
+        save={save}
+        exportLibrary={exportLibrary}
+        setError={setError}
+        onImported={() => {
+          setSelected(null);
+          setDeletingList(null);
+        }}
+      />
       {error && (
         <p role="alert" className="mt-4 text-destructive">
           {error}
@@ -288,155 +77,6 @@ function KaraokePage() {
       <p role="status" className="mt-2 text-sm text-primary">
         {notice}
       </p>
-      {editing && !disabled && (
-        <SongForm
-          key={editing.id}
-          song={editing}
-          onSave={saveSong}
-          onCancel={() => setEditing(null)}
-        />
-      )}
-      <section aria-labelledby="library-heading" className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="library-heading" className="font-display text-2xl">
-            Song library{" "}
-            <span className="text-base text-muted-foreground">({library.songs.length})</span>
-          </h2>
-          <label className="w-full sm:w-80">
-            <span className="sr-only">Search songs</span>
-            <input
-              className={inputClass}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search title, artist, genre, or tag"
-            />
-          </label>
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground sm:hidden">
-          Swipe the song table sideways to see ratings and actions.
-        </p>
-        <div
-          tabIndex={0}
-          role="region"
-          aria-label="Scrollable song library"
-          className="mt-4 max-h-[32rem] overflow-auto rounded-xl border border-border"
-        >
-          <table className="w-full text-left text-sm">
-            <caption className="sr-only">Your songs, metadata, and personal ratings</caption>
-            <thead className="sticky top-0 bg-secondary">
-              <tr>
-                {["Song", "Genre / tags", "Year", "BPM", "Your rating", "Actions"].map((label) => (
-                  <th key={label} scope="col" className="p-3">
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {songs.map((song) => (
-                <tr key={song.id} className="border-t border-border">
-                  <td className="min-w-48 p-3">
-                    <strong>{song.title}</strong>
-                    <p className="text-muted-foreground">{song.artist || "—"}</p>
-                  </td>
-                  <td className="min-w-32 p-3">
-                    {song.genre || "—"}
-                    <p className="text-xs text-muted-foreground">{song.tags.join(", ")}</p>
-                  </td>
-                  <td className="p-3">{song.releaseYear ?? "—"}</td>
-                  <td className="p-3">{song.bpm ?? "—"}</td>
-                  <td className="min-w-32 p-3">
-                    <select
-                      aria-label={`Rating for ${song.title}`}
-                      className={inputClass}
-                      disabled={disabled}
-                      value={song.rating ?? ""}
-                      onChange={(event) => {
-                        const rating = event.target.value ? Number(event.target.value) : null;
-                        save((current) => ({
-                          ...current,
-                          songs: current.songs.map((item) =>
-                            item.id === song.id ? { ...item, rating } : item,
-                          ),
-                        }));
-                      }}
-                    >
-                      <option value="">Unrated</option>
-                      {[1, 2, 3, 4, 5].map((rating) => (
-                        <option key={rating} value={rating}>
-                          {rating} / 5
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="min-w-64 p-3">
-                    <div className="flex flex-wrap gap-1">
-                      <Btn
-                        disabled={disabled}
-                        variant="ghost"
-                        onClick={() => {
-                          setCreatingSong(false);
-                          setEditing(song);
-                        }}
-                      >
-                        Edit
-                      </Btn>
-                      <Btn
-                        disabled={disabled || !currentList}
-                        variant="ghost"
-                        onClick={() => {
-                          if (currentList) {
-                            if (changeList((ids) => [...ids, song.id]))
-                              setNotice(`Added ${song.title} to ${currentList.name}.`);
-                          }
-                        }}
-                      >
-                        Add to setlist
-                      </Btn>
-                      <Btn
-                        disabled={disabled}
-                        variant="danger"
-                        onClick={() => setDeleting(song.id)}
-                      >
-                        Delete
-                      </Btn>
-                    </div>
-                    {deleting === song.id && (
-                      <div className="mt-2">
-                        <p>Delete this song and remove it from your setlists?</p>
-                        <Btn
-                          variant="danger"
-                          onClick={() => {
-                            if (
-                              save((current) => ({
-                                ...current,
-                                songs: current.songs.filter((item) => item.id !== song.id),
-                                setlists: current.setlists.map((list) => ({
-                                  ...list,
-                                  songIds: list.songIds.filter((id) => id !== song.id),
-                                })),
-                              }))
-                            ) {
-                              setDeleting(null);
-                              if (editing?.id === song.id) setEditing(null);
-                            }
-                          }}
-                        >
-                          Confirm delete
-                        </Btn>
-                        <Btn variant="ghost" onClick={() => setDeleting(null)}>
-                          Keep song
-                        </Btn>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {!songs.length && <p className="mt-4 text-muted-foreground">No songs match your search.</p>}
-      </section>
       <section
         aria-labelledby="setlist-heading"
         className="mt-10 rounded-2xl border border-border bg-card p-5"
@@ -493,6 +133,39 @@ function KaraokePage() {
                 ))}
               </select>
             </label>
+            <form
+              className="mt-4 flex flex-wrap items-end gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const id = Number(new FormData(event.currentTarget).get("songId"));
+                if (!library.songs.some((song) => song.id === id)) return;
+                if (changeList((ids) => [...ids, id])) setNotice("Song added to your setlist.");
+              }}
+            >
+              <label className="min-w-0 grow">
+                Add a song
+                <select
+                  name="songId"
+                  required
+                  className={inputClass}
+                  disabled={disabled || !library.songs.length}
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Choose a song
+                  </option>
+                  {library.songs.map((song) => (
+                    <option key={song.id} value={song.id}>
+                      {song.title}
+                      {song.artist ? ` — ${song.artist}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Btn type="submit" disabled={disabled || !library.songs.length}>
+                Add to setlist
+              </Btn>
+            </form>
             <ol className="mt-4 space-y-2">
               {currentList.songIds.map((id, index) => {
                 const song = library.songs.find((item) => item.id === id)!;
@@ -502,9 +175,16 @@ function KaraokePage() {
                     key={`${id}-${index}`}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-secondary px-3 py-2"
                   >
-                    <span className="min-w-0 [overflow-wrap:anywhere]">
-                      {index + 1}. {song.title}
-                    </span>
+                    <div className="min-w-0 [overflow-wrap:anywhere]">
+                      <span>
+                        {index + 1}. {song.title}
+                      </span>
+                      {song.youtubeUrls.length > 0 && (
+                        <div>
+                          <YouTubeLinks urls={song.youtubeUrls} title={song.title} />
+                        </div>
+                      )}
+                    </div>
                     <div className="flex gap-1">
                       <Btn
                         variant="ghost"
@@ -537,7 +217,7 @@ function KaraokePage() {
             </ol>
             {!currentList.songIds.length && (
               <p className="mt-4 text-muted-foreground">
-                Use “Add to setlist” in the song library to start.
+                Choose a song above, then select “Add to setlist” to start.
               </p>
             )}
             <form

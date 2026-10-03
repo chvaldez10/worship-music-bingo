@@ -25,34 +25,41 @@ afterEach(() => {
 
 // jsdom has no layout engine; contrast is verified separately in browser QA.
 describe("Accessible game pages", () => {
-  it.each(["/", "/bingo", "/play", "/caller", "/print", "/charades", "/singing-bee"])(
-    "has no automated semantic violations on %s",
-    async (path) => {
-      Object.assign(routeTree.options, {
-        shellComponent: ({ children }: { children: ReactNode }) => <>{children}</>,
-      });
-      const router = createRouter({
-        routeTree,
-        isServer: false,
-        context: { queryClient: new QueryClient() },
-        history: createMemoryHistory({ initialEntries: [path] }),
-      });
-      const { container } = render(<RouterProvider router={router} />);
-      await screen.findByRole("main");
-      if (path === "/charades") {
-        await waitFor(() =>
-          expect(screen.getByRole("button", { name: "Start team turn" })).toBeEnabled(),
-        );
-        fireEvent.click(screen.getByRole("button", { name: "Start team turn" }));
-        expect(screen.getByText("Mime being swallowed by a giant fish.")).toBeInTheDocument();
-      }
-      const results = await axe.run(container, { rules: { "color-contrast": { enabled: false } } });
-      expect(
-        results.violations.map((violation) => ({
-          id: violation.id,
-          nodes: violation.nodes.map((node) => node.html),
-        })),
-      ).toEqual([]);
-    },
-  );
+  it.each([
+    "/",
+    "/bingo",
+    "/play",
+    "/caller",
+    "/print",
+    "/charades",
+    "/singing-bee",
+    "/songs",
+    "/karaoke",
+  ])("has no automated semantic violations on %s", async (path) => {
+    Object.assign(routeTree.options, {
+      shellComponent: ({ children }: { children: ReactNode }) => <>{children}</>,
+    });
+    const router = createRouter({
+      routeTree,
+      isServer: false,
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: [path] }),
+    });
+    const { container } = render(<RouterProvider router={router} />);
+    await screen.findByRole("main");
+    if (path === "/charades") {
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Start team turn" })).toBeEnabled(),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Start team turn" }));
+      expect(screen.getByText("Mime being swallowed by a giant fish.")).toBeInTheDocument();
+    }
+    const results = await axe.run(container, { rules: { "color-contrast": { enabled: false } } });
+    expect(
+      results.violations.map((violation) => ({
+        id: violation.id,
+        nodes: violation.nodes.map((node) => node.html),
+      })),
+    ).toEqual([]);
+  });
 });

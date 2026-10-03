@@ -34,11 +34,16 @@ try {
     .map((name) => join("supabase/migrations", name));
   const files = [
     "supabase/tests/bootstrap.sql",
-    ...migrations,
+    ...migrations.flatMap((file) =>
+      file.endsWith("20261003050000_song_youtube_link_lists.sql")
+        ? ["supabase/tests/youtube-list-upgrade.sql", file]
+        : [file],
+    ),
     "supabase/seed.sql",
     "supabase/seed.sql",
     "supabase/tests/migrations.sql",
     "supabase/tests/karaoke.sql",
+    "supabase/tests/youtube.sql",
     "supabase/tests/worship-backfill.sql",
     "supabase/tests/seed-repeat.sql",
   ];

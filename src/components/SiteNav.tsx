@@ -1,5 +1,4 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { GAMES } from "@/data/games";
 
 const bingoLinks = [
   { to: "/play", label: "Play Bingo" },
@@ -31,22 +30,12 @@ export function SiteNav() {
           >
             All games
           </Link>
-          {GAMES.map((game) => (
-            <Link
-              key={game.id}
-              to={game.path}
-              className={`inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-secondary hover:text-foreground ${game.id === "bingo" && isBingo ? "bg-secondary text-foreground" : "text-muted-foreground"}`}
-              activeProps={{ className: "bg-secondary text-foreground" }}
-            >
-              {game.shortTitle}
-            </Link>
-          ))}
           <Link
-            to="/karaoke"
+            to="/songs"
             className="inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-secondary"
             activeProps={{ className: "bg-secondary text-foreground" }}
           >
-            My karaoke
+            Song library
           </Link>
         </div>
       </nav>

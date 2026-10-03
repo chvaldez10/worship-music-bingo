@@ -17,6 +17,7 @@ import { Route as KaraokeRouteImport } from './routes/karaoke'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrintRouteImport } from './routes/print'
 import { Route as SingingBeeRouteImport } from './routes/singing-bee'
+import { Route as SongsRouteImport } from './routes/songs'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +59,11 @@ const SingingBeeRoute = SingingBeeRouteImport.update({
   path: '/singing-bee',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SongsRoute = SongsRouteImport.update({
+  id: '/songs',
+  path: '/songs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
+  '/songs': typeof SongsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
+  '/songs': typeof SongsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
+  '/songs': typeof SongsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/play'
     | '/print'
     | '/singing-bee'
+    | '/songs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/play'
     | '/print'
     | '/singing-bee'
+    | '/songs'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/play'
     | '/print'
     | '/singing-bee'
+    | '/songs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   PlayRoute: typeof PlayRoute
   PrintRoute: typeof PrintRoute
   SingingBeeRoute: typeof SingingBeeRoute
+  SongsRoute: typeof SongsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SingingBeeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/songs': {
+      id: '/songs'
+      path: '/songs'
+      fullPath: '/songs'
+      preLoaderRoute: typeof SongsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlayRoute: PlayRoute,
   PrintRoute: PrintRoute,
   SingingBeeRoute: SingingBeeRoute,
+  SongsRoute: SongsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

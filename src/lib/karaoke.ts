@@ -1,20 +1,41 @@
 import { z } from "zod";
 import { SONGS } from "@/data/songs";
+import { isYouTubeVideoUrl } from "./youtube";
 
 const integerId = z.number().int().positive().max(2147483647);
 
 export class KaraokeConflictError extends Error {}
 
-export const karaokeSongSchema = z.object({
-  id: integerId,
-  title: z.string().trim().min(1).max(200),
-  artist: z.string().trim().max(200).default(""),
-  genre: z.string().trim().max(80).default(""),
-  tags: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
-  releaseYear: z.number().int().min(1000).max(2100).nullable().default(null),
-  bpm: z.number().positive().max(400).nullable().default(null),
-  rating: z.number().int().min(1).max(5).nullable().default(null),
-});
+const youtubeVideoUrlSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(2048)
+  .refine(isYouTubeVideoUrl, { message: "Use an HTTPS YouTube video link." })
+  .transform((value) => new URL(value).href);
+
+export const karaokeSongSchema = z
+  .object({
+    id: integerId,
+    title: z.string().trim().min(1).max(200),
+    artist: z.string().trim().max(200).default(""),
+    genre: z.string().trim().max(80).default(""),
+    tags: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
+    releaseYear: z.number().int().min(1000).max(2100).nullable().default(null),
+    bpm: z.number().positive().max(400).nullable().default(null),
+    youtubeUrls: z
+      .array(youtubeVideoUrlSchema)
+      .max(20, "Use up to 20 YouTube links per song.")
+      .transform((urls) => [...new Set(urls)])
+      .optional(),
+    // Read existing device libraries and backups that stored one optional link.
+    youtubeUrl: z.union([z.literal(""), youtubeVideoUrlSchema]).optional(),
+    rating: z.number().int().min(1).max(5).nullable().default(null),
+  })
+  .transform(({ youtubeUrl, youtubeUrls, ...song }) => ({
+    ...song,
+    youtubeUrls: youtubeUrls ?? (youtubeUrl ? [youtubeUrl] : []),
+  }));
 const setlistSchema = z.object({
   id: integerId,
   name: z.string().trim().min(1).max(120),
