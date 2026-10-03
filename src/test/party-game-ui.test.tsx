@@ -71,6 +71,21 @@ describe("Hosted game controls", () => {
 });
 
 describe("Saved host games", () => {
+  it("preserves an unrestorable game until the host explicitly starts a new one", () => {
+    const saved = JSON.stringify({ version: 1, state: { category: "removed-category" } });
+    sessionStorage.setItem("camp-game-test-v1", saved);
+    renderGame();
+    expect(screen.getByText(/Its saved copy is unchanged/)).toBeInTheDocument();
+    expect(sessionStorage.getItem("camp-game-test-v1")).toBe(saved);
+    fireEvent.change(screen.getByLabelText("Team 1 name"), { target: { value: "New team" } });
+    expect(sessionStorage.getItem("camp-game-test-v1")).toBe(saved);
+    fireEvent.click(screen.getByText("Draw next prompt"));
+    expect(sessionStorage.getItem("camp-game-test-v1")).not.toBe(saved);
+    expect(JSON.parse(sessionStorage.getItem("camp-game-test-v1")!).state.teams[0].name).toBe(
+      "New team",
+    );
+    expect(screen.queryByText(/Its saved copy is unchanged/)).not.toBeInTheDocument();
+  });
   it("saves the timer deadline without repeatedly writing storage on each tick", () => {
     renderGame();
     vi.useFakeTimers();

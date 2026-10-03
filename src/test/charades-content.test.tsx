@@ -47,6 +47,22 @@ afterEach(() => {
 });
 
 describe("Database Charades content", () => {
+  it("keeps a saved game from a removed category until a new timed turn is started", async () => {
+    const state = partyReducer(initialPartyState(60, "old-category", true), {
+      type: "turn-start",
+      prompt: { id: "retired-prompt", title: "Retired prompt" },
+      now: Date.now(),
+    });
+    const saved = JSON.stringify({ version: 1, state });
+    sessionStorage.setItem("camp-game-charades-v1", saved);
+    vi.mocked(loadCharadesCatalog).mockResolvedValue(parseCharadesCatalog(payload));
+    render(<Page />);
+    await screen.findByText(/Its saved copy is unchanged/);
+    expect(sessionStorage.getItem("camp-game-charades-v1")).toBe(saved);
+    fireEvent.click(screen.getByRole("button", { name: "Start team turn" }));
+    expect(sessionStorage.getItem("camp-game-charades-v1")).not.toBe(saved);
+    expect(screen.queryByText(/Its saved copy is unchanged/)).not.toBeInTheDocument();
+  });
   it("loads new categories and details without changing saved-game identities", () => {
     const categories = catalogCategories(parseCharadesCatalog(payload));
     expect(categories.map((c) => c.id)).toEqual(["bible", "songs", "church", "bible-characters"]);

@@ -1,6 +1,11 @@
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { Prompt } from "@/data/game-prompts";
-import { initialPartyState, partyReducer, restorePartyState } from "@/lib/party-game";
+import {
+  initialPartyState,
+  partyReducer,
+  restorePartyState,
+  type PartyAction,
+} from "@/lib/party-game";
 
 export type PromptCategory = { id: string; label: string; prompts: Prompt[] };
 
@@ -12,11 +17,12 @@ export function usePartyGame(
   defaultSeconds: number,
   timedTurns = false,
 ) {
-  const [state, dispatch] = useReducer(partyReducer, undefined, () =>
+  const [state, reduceDispatch] = useReducer(partyReducer, undefined, () =>
     initialPartyState(defaultSeconds, categories?.[0]?.id ?? null, timedTurns),
   );
   const [loaded, setLoaded] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
+  const canSave = useRef(true);
   const key = `camp-game-${gameId}-v1`;
   const bank = useMemo(
     () => (categories ? categories.flatMap((category) => category.prompts) : prompts),
@@ -33,7 +39,7 @@ export function usePartyGame(
         const group = categories?.find((category) =>
           category.prompts.some((prompt) => prompt.id === restored.current?.prompt.id),
         );
-        dispatch({
+        reduceDispatch({
           type: "restore",
           state:
             restored.current?.result === null && group
@@ -41,9 +47,11 @@ export function usePartyGame(
               : restored,
         });
       }
+      canSave.current = true;
     } catch {
+      canSave.current = false;
       setStorageError(
-        "The saved game could not be restored. A fresh game is ready; keep this tab open if saving is unavailable.",
+        "The saved game could not be restored. Its saved copy is unchanged. Starting a new game will replace it.",
       );
     }
     setLoaded(true);
@@ -62,7 +70,7 @@ export function usePartyGame(
     },
   });
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !canSave.current) return;
     try {
       sessionStorage.setItem(key, serialized);
     } catch {
@@ -72,9 +80,17 @@ export function usePartyGame(
     }
   }, [key, loaded, serialized]);
 
+  const dispatch = (action: PartyAction) => {
+    if (!canSave.current && ["draw", "turn-start", "restart"].includes(action.type)) {
+      canSave.current = true;
+      setStorageError(null);
+    }
+    reduceDispatch(action);
+  };
+
   useEffect(() => {
     if (state.timer.deadline === null) return;
-    const tick = () => dispatch({ type: "timer-tick", now: Date.now() });
+    const tick = () => reduceDispatch({ type: "timer-tick", now: Date.now() });
     const interval = window.setInterval(tick, 250);
     window.addEventListener("focus", tick);
     document.addEventListener("visibilitychange", tick);

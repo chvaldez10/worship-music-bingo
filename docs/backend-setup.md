@@ -20,10 +20,12 @@ content-admin access.
   `updated_at` is maintained automatically by a trigger.
 - Deleting a category that still has prompts is blocked
   (`on delete restrict`). Delete or move the prompts first.
-- Teams, scores, timers, and round history live in `saved_games.state` —
-  no separate tables yet.
-- Singing Bee and the "songs" Charades category share the `songs` table.
-  Do not duplicate songs into `charades_prompts`.
+- `saved_games.state` is prepared for Cloud sessions. Current teams, scores,
+  timers, and round history are saved in the host tab's session storage;
+  Cloud session saving is not connected yet.
+- Charades reads its worship-song category from `songs`. Bingo and Singing Bee
+  share the bundled bank in `src/data/songs.ts`; database edits do not change
+  those two games yet. Do not duplicate songs into `charades_prompts`.
 
 ## ID mapping (frontend data → database)
 
@@ -45,6 +47,9 @@ content-admin access.
 - Acting hints are shown below revealed Charades prompts and hidden along with
   the title. Scores and timers still use tab-local saves. Other games and personal
   karaoke retain their existing content and saving behavior.
+- If a saved host game cannot be restored, its stored copy is preserved until
+  the host starts a fresh prompt/team turn or confirms a restart. Merely opening
+  the page or renaming a team does not overwrite the failed save.
 
 ## Repairing the incomplete initial setup
 
