@@ -106,7 +106,11 @@ export function CallerDashboard() {
         </section>
 
         <div className="flex flex-wrap gap-3">
-          <Btn onClick={draw} disabled={!loaded || done} className="flex-1 py-4 text-lg">
+          <Btn
+            onClick={draw}
+            disabled={!loaded || done}
+            className="flex-1 basis-full py-4 text-lg sm:basis-48"
+          >
             Draw Next Song
           </Btn>
           <Btn
@@ -143,7 +147,7 @@ export function CallerDashboard() {
           </div>
           <button
             onClick={() => setShowRemaining((v) => !v)}
-            className="mt-4 text-sm font-semibold text-primary hover:underline"
+            className="mt-4 min-h-11 text-sm font-semibold text-primary hover:underline"
           >
             {showRemaining ? "Hide" : "Show"} remaining songs ({remaining.length})
           </button>

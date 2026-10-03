@@ -18,7 +18,7 @@ export const GAMES = [
     subtitle: "Act & guess",
     description:
       "Act out Bible events, worship songs, and church activities with a timer and team scores.",
-    details: "2–6 teams · 60-second rounds",
+    details: "2–6 teams · Timed team turns",
   },
   {
     id: "singing-bee",

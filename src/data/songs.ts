@@ -4,6 +4,10 @@ export type Song = {
   id: string;
   title: string;
   artist?: string;
+  genre?: string;
+  tags?: string[];
+  releaseYear?: number;
+  bpm?: number;
 };
 
 /** IDs define identity; matching titles with different IDs are allowed. */
@@ -89,5 +93,6 @@ const raw: [id: string, title: string, artist?: string][] = [
 export const SONGS: Song[] = raw.map(([id, title, artist]) => ({
   id,
   title,
+  genre: "Worship",
   ...(artist ? { artist } : {}),
 }));

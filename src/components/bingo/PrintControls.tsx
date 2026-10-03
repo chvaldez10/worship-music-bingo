@@ -43,7 +43,7 @@ export function PrintControls({
             onClick={() => setCount(String(p))}
             aria-pressed={count === String(p)}
             className={cn(
-              "h-10 min-w-12 rounded-full border-2 px-3 text-sm font-semibold transition-colors",
+              "h-12 min-w-12 rounded-full border-2 px-3 text-sm font-semibold transition-colors",
               count === String(p)
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border hover:bg-secondary",
@@ -62,7 +62,7 @@ export function PrintControls({
           aria-describedby={error ? "print-error" : undefined}
           value={count}
           onChange={(e) => setCount(e.target.value)}
-          className="h-10 w-24 rounded-full border-2 border-border bg-background px-4 text-sm font-semibold"
+          className="h-12 w-24 rounded-full border-2 border-border bg-background px-4 text-sm font-semibold"
           aria-label="Custom number of cards"
         />
       </div>
@@ -77,7 +77,7 @@ export function PrintControls({
               aria-pressed={perPage === layout}
               onClick={() => setPerPage(layout)}
               className={cn(
-                "h-10 rounded-full border-2 px-4 text-sm font-semibold transition-colors",
+                "h-12 rounded-full border-2 px-4 text-sm font-semibold transition-colors",
                 perPage === layout
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border hover:bg-secondary",

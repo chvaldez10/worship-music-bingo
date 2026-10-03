@@ -6,13 +6,13 @@ content-admin access.
 
 ## Tables
 
-| Table | Purpose | Who can read | Who can write |
-| --- | --- | --- | --- |
-| `songs` | Worship songs (title, optional artist) | Everyone | Content admins |
-| `charades_categories` | Charades categories (stable slug, label) | Everyone | Content admins |
-| `charades_prompts` | Charades prompts (title, optional detail) | Everyone | Content admins |
-| `saved_games` | Saved game sessions (`game_type`: bingo / charades / singing-bee, JSONB `state`) | Owner only | Owner only |
-| `content_admins` | Users allowed to manage content | Own membership only | Privileged access only |
+| Table                 | Purpose                                                                          | Who can read        | Who can write          |
+| --------------------- | -------------------------------------------------------------------------------- | ------------------- | ---------------------- |
+| `songs`               | Worship songs (title, optional artist)                                           | Everyone            | Content admins         |
+| `charades_categories` | Charades categories (stable slug, label)                                         | Everyone            | Content admins         |
+| `charades_prompts`    | Charades prompts (title, optional detail)                                        | Everyone            | Content admins         |
+| `saved_games`         | Saved game sessions (`game_type`: bingo / charades / singing-bee, JSONB `state`) | Owner only          | Owner only             |
+| `content_admins`      | Users allowed to manage content                                                  | Own membership only | Privileged access only |
 
 - All IDs are auto-generated integers, except `content_admins.user_id` and
   `saved_games.owner_id`, which are UUIDs referencing auth users.
@@ -27,26 +27,53 @@ content-admin access.
 
 ## ID mapping (frontend data → database)
 
-- `src/data/songs.ts`: the numeric portion of each string ID is preserved —
-  `song-01` → `songs.id = 1`, …, `song-40` → `songs.id = 40`.
-- Charades categories keep permanent integer IDs and slugs:
-  `bible = 1`, `songs = 2`, `church = 3`.
-- `src/data/game-prompts.ts` is not present in this repository yet, so
-  non-song charades prompts are not seeded. When that file lands, seed its
-  prompts with explicit integer IDs in a follow-up migration/seed and reset
-  the identity sequence above the highest seeded ID.
+- Songs retain the numeric portion of their permanent frontend ID:
+  `song-01` → `1`, `song-67` → `67`. IDs have gaps because retired songs
+  are never reassigned. The current bank contains 59 songs, including hymns.
+- Categories: `bible = 1`, `songs = 2`, `church = 3`. Their slugs stay stable.
+- Bible prompts: `bible-N` → `N` (1–24).
+- Church prompts: `church-N` → `24 + N` (25–44).
+- The frontend still uses its existing string IDs. Converting its types,
+  local saves, and data loading is a separate integration step.
 
-## Seeding
+## Repairing the incomplete initial setup
 
-- The initial migration already seeded songs 1–40 and categories 1–3.
-- `supabase/seed.sql` contains the same idempotent seed for fresh
-  environments. It is safe to run repeatedly (upserts + sequence resets).
+The first migration seeded an outdated 40-song bank and three categories;
+its schema creation succeeded. It did not seed non-song Charades prompts.
+The corrective migration is
+`supabase/migrations/20261003010000_complete_camp_content.sql`.
+Apply this **new file** through an authorized migration runner or the Lovable
+Cloud SQL editor as one transaction. Do not rerun or rewrite the original
+schema migrations against an existing database.
+
+The repair inserts the current 59-song bank and 44 prompts. It retires only
+obsolete starter rows whose titles and artists are unchanged, preserving
+customized records. It also makes function/sequence permissions explicit,
+limits membership checks to the calling user, and adds lookup indexes.
+Cloud is not updated merely by committing or pulling these files.
+
+`supabase/seed.sql` is for databases with the repaired schema. Repeated runs
+preserve existing records and admin edits, and never move identity sequences
+backwards. Consequently, it fills missing starter content; it is not a
+command to overwrite all live content with the source files.
+
+## Local database verification
+
+Install PostgreSQL (`initdb`, `pg_ctl`, and `psql` on PATH), then run
+`npm run test:db`. Run as a normal local user, not root. The command creates
+and removes its own temporary database on a private Unix socket; it never
+reads `.env`, connects to Cloud, or accepts an external database URL.
+It applies all migrations, repeats seeds, and tests public reads, admin-only
+content CRUD, owner-only saved-game CRUD, foreign keys and generated IDs.
+The auth schema in `supabase/tests/bootstrap.sql` is a minimal test fixture,
+not a substitute for testing deployed Supabase authentication.
 
 ## Local development redirects
 
-Sign-in redirects for `http://localhost:5173` and `http://127.0.0.1:5173`
-are allowed in addition to the production URLs, so the external frontend
-refactor can run against this backend from a local dev server.
+Check the Cloud authentication settings before wiring up login. Keep the
+production URLs and add `http://localhost:5173/**` and
+`http://127.0.0.1:5173/**` as additional redirect URLs. These settings are not
+proven by the migration files and still need verification in Cloud.
 
 ## Granting content-admin access
 
@@ -73,3 +100,52 @@ To revoke access, delete the row.
 See `.env.example` for the public connection variables
 (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`,
 `VITE_SUPABASE_PROJECT_ID`). Secret keys are never stored in the repo.
+
+## Personal karaoke and song metadata
+
+`20261003020000_song_metadata_and_setlists.sql` is a separate new migration,
+following the content repair. It has been tested locally; it must be applied
+in Cloud before Cloud karaoke CRUD is implemented. Do not rerun the content
+repair just to add these fields.
+
+The public song catalog gains only `genre`, `tags`, `release_year`, and `bpm`.
+Unknown genre/year/BPM stays null; tags defaults to an empty array. Year and
+BPM refer to the recording/version represented by that song, not an assumed
+original composition date or a live arrangement. The starter bank is explicitly categorized as Worship; year and BPM are not guessed. BPM supports two decimal places and values greater than 0
+up to 400. Ratings are never placed on the publicly readable songs table.
+
+Private tables:
+
+- `song_ratings`: one 1–5 rating per owner/song; removing the row means unrated.
+- `setlists`: owner and name, with generated integer IDs.
+- `setlist_items`: song and zero-based position in a setlist. Repeats are allowed.
+  Position is unique within a setlist, checked at transaction end so swaps
+  can be atomic. Item access follows the owning setlist's RLS policy.
+
+Deleting a setlist removes its items. Deleting a song used by a Cloud setlist
+is blocked until references are removed. Song ratings cascade on song deletion.
+Other users, including content admins, cannot access someone else's ratings
+or setlists through the normal client.
+
+The `/karaoke` page currently works **on the current device** using a separate,
+validated local library initialized from the 59 starter songs. Personal edits,
+ratings, and additional songs do not alter camp games or the live public catalog.
+JSON export/import backs up the entire personal library; replacement requires
+confirmation and invalid files are rejected. Cloud sync/auth is still pending;
+local IDs must be mapped to Cloud-generated IDs when implementing import/sync,
+rather than assuming newly added local IDs are free in the Cloud catalog.
+
+Taste comparisons show average ratings and sample sizes by genre, tag, decade,
+or tempo (under 80 / 80–119 / 120+ BPM). Only rated songs with relevant metadata
+participate; multiple distinct tags place a song in multiple groups. These are
+summaries of explicit ratings, not listening-history analytics.
+
+## Worship genre backfill
+
+After the metadata migration, apply
+`20261003030000_backfill_worship_genre.sql` to categorize the 59 starter songs
+as `Worship`. It fills only blank genres on matching starter IDs/titles,
+preserving custom genres, renamed records, additional songs, and tags.
+Repeated seeds apply the same rule. Existing local karaoke libraries receive
+the same backfill on load, preserving ratings and setlists. No redundant
+worship tag is added; hymn and mood tags can be curated later.

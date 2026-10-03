@@ -11,19 +11,22 @@ export function SiteNav() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isBingo = ["/bingo", "/play", "/caller", "/print"].includes(pathname);
   return (
-    <header className="no-print sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
+    <header className="no-print top-0 z-20 border-b border-border bg-background/85 backdrop-blur sm:sticky">
       <nav
         aria-label="Games"
         className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3"
       >
-        <Link to="/" className="font-display text-lg text-foreground sm:text-xl">
+        <Link
+          to="/"
+          className="inline-flex min-h-11 items-center gap-1 font-display text-lg text-foreground sm:text-xl"
+        >
           Camp <span className="text-primary">Games</span>
         </Link>
         <div className="flex flex-wrap gap-1">
           <Link
             to="/"
             activeOptions={{ exact: true }}
-            className="rounded-full px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-secondary"
+            className="inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-secondary"
             activeProps={{ className: "bg-secondary text-foreground" }}
           >
             All games
@@ -32,12 +35,19 @@ export function SiteNav() {
             <Link
               key={game.id}
               to={game.path}
-              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-secondary hover:text-foreground ${game.id === "bingo" && isBingo ? "bg-secondary text-foreground" : "text-muted-foreground"}`}
+              className={`inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-secondary hover:text-foreground ${game.id === "bingo" && isBingo ? "bg-secondary text-foreground" : "text-muted-foreground"}`}
               activeProps={{ className: "bg-secondary text-foreground" }}
             >
               {game.shortTitle}
             </Link>
           ))}
+          <Link
+            to="/karaoke"
+            className="inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-secondary"
+            activeProps={{ className: "bg-secondary text-foreground" }}
+          >
+            My karaoke
+          </Link>
         </div>
       </nav>
       {isBingo && (
@@ -49,7 +59,7 @@ export function SiteNav() {
             <Link
               key={link.to}
               to={link.to}
-              className="rounded-full px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-secondary"
+              className="inline-flex min-h-11 items-center rounded-full px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-secondary"
               activeProps={{ className: "bg-secondary text-foreground" }}
             >
               {link.label}

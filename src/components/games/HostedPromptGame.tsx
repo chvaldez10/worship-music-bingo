@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Prompt } from "@/data/game-prompts";
 import { ROUND_DURATIONS } from "@/lib/party-game";
 import { usePartyGame, type PromptCategory } from "@/hooks/use-party-game";
-import { Btn } from "@/components/ui-lite";
+import { Btn, Select } from "@/components/ui-lite";
 
 type Props = {
   gameId: string;
@@ -12,6 +12,8 @@ type Props = {
   prompts: Prompt[];
   defaultSeconds: number;
   categories?: PromptCategory[];
+  timedTurns?: boolean;
+  teamTurnInstructions?: string[];
 };
 
 export function HostedPromptGame({
@@ -22,17 +24,26 @@ export function HostedPromptGame({
   prompts,
   defaultSeconds,
   categories,
+  timedTurns = false,
+  teamTurnInstructions,
 }: Props) {
   const { state, dispatch, loaded, storageError } = usePartyGame(
     gameId,
     prompts,
     categories,
     defaultSeconds,
+    timedTurns,
   );
+  const lastResultAt = useRef(-Infinity);
   const [revealed, setRevealed] = useState(false);
   const { duration, deadline } = state.timer;
   const seconds = Math.ceil(state.timer.remainingMs / 1000);
   const available = categories?.find((group) => group.id === state.category)?.prompts ?? prompts;
+  const timed = !!state.turn;
+  const canUndo = timed
+    ? !!state.turn?.live && state.history.at(-1)?.turn === state.turn.number && seconds > 0
+    : !state.current || state.current.result !== null;
+  const coolingDown = timed && Date.now() - lastResultAt.current < 300;
   const pending = state.current?.result === null;
   const remaining = available.filter((prompt) => !state.used.includes(prompt.id));
   const active = state.teams[state.activeTeam];
@@ -45,11 +56,22 @@ export function HostedPromptGame({
     if (!loaded || pending || !remaining.length) return;
     const prompt = remaining[Math.floor(Math.random() * remaining.length)];
     if (!prompt) return;
-    dispatch({ type: "draw", prompt });
-    setRevealed(false);
+    dispatch(timed ? { type: "turn-start", prompt, now: Date.now() } : { type: "draw", prompt });
+    setRevealed(timed);
   };
   const finish = (result: "correct" | "pass") => {
-    dispatch({ type: "result", result, now: Date.now() });
+    if (timed && state.current) {
+      const now = Date.now();
+      if (now - lastResultAt.current < 300) return;
+      lastResultAt.current = now;
+      dispatch({
+        type: "turn-result",
+        result,
+        expectedId: state.current.prompt.id,
+        next: remaining[Math.floor(Math.random() * remaining.length)] ?? null,
+        now: Date.now(),
+      });
+    } else dispatch({ type: "result", result, now: Date.now() });
     setRevealed(true);
   };
 
@@ -70,11 +92,28 @@ export function HostedPromptGame({
       <div className="grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="min-w-0 space-y-6">
           <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
-            <div className="mb-5 flex flex-wrap gap-4">
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {timedTurns && (
+                <label className="min-w-0 text-sm font-semibold sm:col-span-2">
+                  Play style
+                  <Select
+                    aria-label="Charades play style"
+                    value={timed ? "team-turn" : "single-prompt"}
+                    disabled={!loaded || !!state.used.length}
+                    onChange={(event) => {
+                      dispatch({ type: "timed-mode", enabled: event.target.value === "team-turn" });
+                      setRevealed(false);
+                    }}
+                  >
+                    <option value="team-turn">Timed team turn</option>
+                    <option value="single-prompt">One prompt per turn</option>
+                  </Select>
+                </label>
+              )}
               {categories && (
-                <label className="flex-1 text-sm font-semibold">
+                <label className="min-w-0 text-sm font-semibold">
                   Category
-                  <select
+                  <Select
                     aria-label="Charades category"
                     value={state.category ?? ""}
                     disabled={!loaded || pending}
@@ -82,34 +121,34 @@ export function HostedPromptGame({
                       dispatch({ type: "category", category: e.target.value });
                       setRevealed(false);
                     }}
-                    className="mt-2 block w-full rounded-xl border border-border bg-background p-3 disabled:opacity-50"
                   >
                     {categories.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               )}
-              <label className="text-sm font-semibold">
-                Round timer
-                <select
-                  aria-label="Round timer"
+              <label
+                className={`min-w-0 text-sm font-semibold ${categories ? "" : "sm:col-span-2"}`}
+              >
+                {timed ? "Team turn timer" : "Round timer"}
+                <Select
+                  aria-label={timed ? "Team turn timer" : "Round timer"}
                   value={duration}
                   disabled={!loaded || pending}
                   onChange={(e) => {
                     const value = Number(e.target.value);
                     dispatch({ type: "duration", seconds: value });
                   }}
-                  className="mt-2 block rounded-xl border border-border bg-background p-3 disabled:opacity-50"
                 >
                   {ROUND_DURATIONS.map((value) => (
                     <option key={value} value={value}>
                       {value} seconds
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
             </div>
             <p className="text-sm font-semibold text-primary">
@@ -132,14 +171,18 @@ export function HostedPromptGame({
                   <>
                     <h2 className="font-display text-3xl">Prompt hidden</h2>
                     <p className="mt-2 text-muted-foreground">
-                      Let only the actor or host see the prompt before the round.
+                      Let only the actor or host see the prompt.
                     </p>
                   </>
                 )
               ) : (
                 <>
                   <h2 className="font-display text-3xl">Ready to play?</h2>
-                  <p className="mt-2 text-muted-foreground">Draw your first prompt to begin.</p>
+                  <p className="mt-2 text-muted-foreground">
+                    {timed
+                      ? "Choose an actor, then start the team turn."
+                      : "Draw your first prompt to begin."}
+                  </p>
                 </>
               )}
             </div>
@@ -160,30 +203,66 @@ export function HostedPromptGame({
               >
                 {seconds}s
               </span>
-              <Btn
-                variant="outline"
-                disabled={!loaded || !pending || seconds === 0}
-                onClick={() => {
-                  if (deadline !== null) {
-                    dispatch({ type: "timer-pause", now: Date.now() });
-                  } else {
-                    setRevealed(false);
-                    dispatch({ type: "timer-start", now: Date.now() });
-                  }
-                }}
-              >
-                {deadline !== null ? "Pause timer" : "Start timer"}
-              </Btn>
-              <Btn variant="ghost" disabled={!loaded || !pending} onClick={resetTimer}>
-                Reset timer
-              </Btn>
+              {(!timed || state.turn?.live) && (
+                <Btn
+                  variant="outline"
+                  disabled={!loaded || !pending || seconds === 0}
+                  onClick={() => {
+                    if (deadline !== null) {
+                      dispatch({ type: "timer-pause", now: Date.now() });
+                    } else {
+                      if (!timed) setRevealed(false);
+                      dispatch({ type: "timer-start", now: Date.now() });
+                    }
+                  }}
+                >
+                  {deadline !== null ? "Pause timer" : timed ? "Resume timer" : "Start timer"}
+                </Btn>
+              )}
+              {!timed && (
+                <Btn variant="ghost" disabled={!loaded || !pending} onClick={resetTimer}>
+                  Reset timer
+                </Btn>
+              )}
+              {timed && state.turn?.live && (
+                <Btn
+                  variant="ghost"
+                  disabled={!loaded || !state.turn?.live}
+                  onClick={() => dispatch({ type: "turn-end", now: Date.now() })}
+                >
+                  End team turn
+                </Btn>
+              )}
             </div>
-            {pending && seconds === 0 && (
+            {!timed && pending && seconds === 0 && (
               <p role="status" className="mt-3 font-semibold text-destructive">
                 Time's up! Record the result to continue.
               </p>
             )}
-            {state.current?.result && (
+            {timed && state.turn && !state.turn.live && state.turn.number > 0 && (
+              <p role="status" className="mt-4 font-semibold text-primary">
+                {seconds === 0 ? "Time’s up! " : "Turn complete. "}
+                {nameFor(state.history.at(-1)!.teamId)} scored{" "}
+                {
+                  state.history.filter(
+                    (round) => round.turn === state.turn!.number - 1 && round.result === "correct",
+                  ).length
+                }{" "}
+                this turn. Pick an actor for the next team.
+              </p>
+            )}
+            {timed && state.turn?.live && (
+              <p className="mt-3 text-sm font-semibold text-primary">
+                One actor for this whole turn ·{" "}
+                {
+                  state.history.filter(
+                    (round) => round.turn === state.turn!.number && round.result === "correct",
+                  ).length
+                }{" "}
+                correct so far. Keep this screen out of your team’s view.
+              </p>
+            )}
+            {!timed && state.current?.result && (
               <p role="status" className="mt-4 font-semibold text-primary">
                 {state.current.result === "correct"
                   ? `Correct! +1 point for ${nameFor(state.current.teamId)}.`
@@ -192,23 +271,38 @@ export function HostedPromptGame({
             )}
             <div className="mt-6 flex flex-wrap gap-2">
               <Btn disabled={!loaded || pending || !remaining.length} onClick={draw}>
-                Draw next prompt
+                {timed ? "Start team turn" : "Draw next prompt"}
               </Btn>
-              <Btn disabled={!loaded || !pending} onClick={() => finish("correct")}>
+              <Btn
+                disabled={
+                  !loaded ||
+                  !pending ||
+                  (timed && (deadline === null || seconds === 0 || coolingDown))
+                }
+                onClick={() => finish("correct")}
+              >
                 Correct · +1 point
               </Btn>
-              <Btn variant="outline" disabled={!loaded || !pending} onClick={() => finish("pass")}>
-                Pass / Miss
+              <Btn
+                variant="outline"
+                disabled={
+                  !loaded ||
+                  !pending ||
+                  (timed && (deadline === null || seconds === 0 || coolingDown))
+                }
+                onClick={() => finish("pass")}
+              >
+                {timed ? "Pass · next prompt" : "Pass / Miss"}
               </Btn>
               <Btn
                 variant="ghost"
-                disabled={!loaded || pending || !state.history.length}
+                disabled={!loaded || !canUndo || !state.history.length}
                 onClick={() => {
                   const group = categories?.find((category) =>
                     category.prompts.some((prompt) => prompt.id === state.current?.prompt.id),
                   );
-                  dispatch({ type: "undo", category: group?.id ?? null });
-                  setRevealed(false);
+                  dispatch({ type: "undo", category: group?.id ?? null, now: Date.now() });
+                  setRevealed(timed);
                 }}
               >
                 Undo last result
@@ -231,9 +325,11 @@ export function HostedPromptGame({
           <section className="rounded-3xl border border-border bg-card p-5">
             <h2 className="font-display text-2xl">How to play</h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-muted-foreground">
-              {instructions.map((instruction) => (
-                <li key={instruction}>{instruction}</li>
-              ))}
+              {(timed && teamTurnInstructions ? teamTurnInstructions : instructions).map(
+                (instruction) => (
+                  <li key={instruction}>{instruction}</li>
+                ),
+              )}
             </ol>
             <p className="mt-4 text-sm text-muted-foreground">
               Use one host tab. Scores and rounds are saved in this tab, including after a refresh
@@ -245,7 +341,9 @@ export function HostedPromptGame({
           <section className="rounded-3xl border border-border bg-card p-5">
             <h2 className="font-display text-2xl">Teams & scores</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Split the group into 2–6 teams. Turns rotate after each result.
+              {timed
+                ? "Split into 2–6 teams. One actor stays up for the entire timed turn; teams rotate when it ends."
+                : "Split the group into 2–6 teams. Turns rotate after each result."}
             </p>
             <div className="mt-4 space-y-3">
               {state.teams.map((team, i) => (
@@ -299,10 +397,12 @@ export function HostedPromptGame({
             </div>
           </section>
           <section className="rounded-3xl border border-border bg-card p-5">
-            <h2 className="font-display text-2xl">Round history</h2>
+            <h2 className="font-display text-2xl">{timed ? "Prompt history" : "Round history"}</h2>
             {!state.history.length ? (
               <p className="mt-3 text-sm text-muted-foreground">
-                Completed rounds will appear here.
+                {timed
+                  ? "Completed prompts will appear here."
+                  : "Completed rounds will appear here."}
               </p>
             ) : (
               <ol reversed className="mt-3 max-h-96 overflow-auto divide-y divide-border">
@@ -312,7 +412,8 @@ export function HostedPromptGame({
                       {state.history.length - i}. {round.prompt.title}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {nameFor(round.teamId)} ·{" "}
+                      {nameFor(round.teamId)}
+                      {timed ? ` · Turn ${(round.turn ?? 0) + 1}` : ""} ·{" "}
                       {round.result === "correct" ? "+1 point" : "Pass / Miss"}
                     </p>
                   </li>

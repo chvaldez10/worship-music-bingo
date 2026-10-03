@@ -29,6 +29,13 @@ function CharadesPage() {
       title="Charades"
       description="A little acting, a lot of laughter. Take turns bringing familiar stories, songs, and church life to life."
       defaultSeconds={60}
+      timedTurns
+      teamTurnInstructions={[
+        "Choose a category and one actor for the active team. Keep this screen visible only to the actor and host.",
+        "Start the team turn. The same actor keeps acting without speaking, singing, or spelling words until the timer ends.",
+        "Correct earns one point and immediately draws the next prompt. Pass also draws the next prompt. Neither resets the timer.",
+        "When time runs out, the next team chooses its actor. Change categories between turns; no prompts repeat until restart.",
+      ]}
       prompts={prompts}
       categories={categories}
       instructions={[

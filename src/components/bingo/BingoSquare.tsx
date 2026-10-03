@@ -11,8 +11,8 @@ type Props = {
 
 function sizeFor(title: string) {
   const n = title.length;
-  if (n > 26) return "text-[0.55rem] sm:text-xs";
-  if (n > 16) return "text-[0.62rem] sm:text-sm";
+  if (n > 26) return "text-[0.68rem] sm:text-xs";
+  if (n > 16) return "text-[0.7rem] min-[375px]:text-xs sm:text-sm";
   return "text-[0.7rem] sm:text-base";
 }
 

@@ -10,9 +10,10 @@ export function usePartyGame(
   prompts: Prompt[],
   categories: PromptCategory[] | undefined,
   defaultSeconds: number,
+  timedTurns = false,
 ) {
   const [state, dispatch] = useReducer(partyReducer, undefined, () =>
-    initialPartyState(defaultSeconds, categories?.[0]?.id ?? null),
+    initialPartyState(defaultSeconds, categories?.[0]?.id ?? null, timedTurns),
   );
   const [loaded, setLoaded] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);

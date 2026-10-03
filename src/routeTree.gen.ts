@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BingoRouteImport } from './routes/bingo'
 import { Route as CallerRouteImport } from './routes/caller'
 import { Route as CharadesRouteImport } from './routes/charades'
+import { Route as KaraokeRouteImport } from './routes/karaoke'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrintRouteImport } from './routes/print'
 import { Route as SingingBeeRouteImport } from './routes/singing-bee'
@@ -37,6 +38,11 @@ const CharadesRoute = CharadesRouteImport.update({
   path: '/charades',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KaraokeRoute = KaraokeRouteImport.update({
+  id: '/karaoke',
+  path: '/karaoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayRoute = PlayRouteImport.update({
   id: '/play',
   path: '/play',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
   '/charades': typeof CharadesRoute
+  '/karaoke': typeof KaraokeRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
   '/charades': typeof CharadesRoute
+  '/karaoke': typeof KaraokeRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/bingo': typeof BingoRoute
   '/caller': typeof CallerRoute
   '/charades': typeof CharadesRoute
+  '/karaoke': typeof KaraokeRoute
   '/play': typeof PlayRoute
   '/print': typeof PrintRoute
   '/singing-bee': typeof SingingBeeRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/caller'
     | '/charades'
+    | '/karaoke'
     | '/play'
     | '/print'
     | '/singing-bee'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/caller'
     | '/charades'
+    | '/karaoke'
     | '/play'
     | '/print'
     | '/singing-bee'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/bingo'
     | '/caller'
     | '/charades'
+    | '/karaoke'
     | '/play'
     | '/print'
     | '/singing-bee'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   BingoRoute: typeof BingoRoute
   CallerRoute: typeof CallerRoute
   CharadesRoute: typeof CharadesRoute
+  KaraokeRoute: typeof KaraokeRoute
   PlayRoute: typeof PlayRoute
   PrintRoute: typeof PrintRoute
   SingingBeeRoute: typeof SingingBeeRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CharadesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/karaoke': {
+      id: '/karaoke'
+      path: '/karaoke'
+      fullPath: '/karaoke'
+      preLoaderRoute: typeof KaraokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/play': {
       id: '/play'
       path: '/play'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   BingoRoute: BingoRoute,
   CallerRoute: CallerRoute,
   CharadesRoute: CharadesRoute,
+  KaraokeRoute: KaraokeRoute,
   PlayRoute: PlayRoute,
   PrintRoute: PrintRoute,
   SingingBeeRoute: SingingBeeRoute,

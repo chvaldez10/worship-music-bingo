@@ -1,3 +1,40 @@
+-- Repair the incomplete initial setup without rewriting applied migrations.
+-- Function grants are explicit; do not depend on project default privileges.
+create or replace function public.is_content_admin(_user_id uuid)
+returns boolean language sql stable security definer set search_path = ''
+as $$
+  select _user_id = auth.uid() and exists (
+    select 1 from public.content_admins where user_id = _user_id
+  )
+$$;
+revoke all on function public.is_content_admin(uuid) from public, anon;
+grant execute on function public.is_content_admin(uuid) to authenticated, service_role;
+revoke all on public.content_admins from anon, authenticated;
+grant select on public.content_admins to authenticated;
+grant usage, select on sequence public.songs_id_seq, public.charades_categories_id_seq,
+  public.charades_prompts_id_seq, public.saved_games_id_seq to authenticated, service_role;
+
+create index if not exists saved_games_owner_id_idx on public.saved_games(owner_id);
+create index if not exists charades_prompts_category_id_idx on public.charades_prompts(category_id);
+
+-- Retire only unchanged obsolete starter rows; preserve any admin edits.
+delete from public.songs where (id, title, artist) in (
+  (3, 'Gratitude', 'Brandon Lake'),
+  (6, 'Trust in God', 'Elevation Worship'),
+  (10, 'Who Else', 'Gateway Worship'),
+  (22, 'House of the Lord', 'Phil Wickham'),
+  (23, 'Same God', 'Elevation Worship'),
+  (24, 'Graves Into Gardens', 'Elevation Worship'),
+  (25, 'Egypt', 'Bethel Music / Cory Asbury'),
+  (46, 'Jireh', 'Elevation Worship / Maverick City Music')
+);
+
+-- Correct initial placeholder labels only when they have not been customized.
+update public.charades_categories set label = case slug
+  when 'bible' then 'Bible events' when 'songs' then 'Worship songs'
+  when 'church' then 'Church activities' end
+where (slug, label) in (('bible', 'Bible'), ('songs', 'Songs'), ('church', 'Church'));
+
 -- Canonical starter content. Re-running preserves content edited by admins.
 -- Songs keep the numeric portion of song-NN; retired IDs are never reassigned.
 -- Categories: bible=1, songs=2, church=3.
@@ -138,71 +175,3 @@ select setval(pg_get_serial_sequence('public.charades_prompts', 'id'),
 select setval(pg_get_serial_sequence('public.saved_games', 'id'),
   greatest((select coalesce(max(id), 1) from public.saved_games),
            (select last_value from public.saved_games_id_seq)), true);
-
--- Backfill only unchanged starter titles with no genre. Preserve custom genres,
--- renamed songs, personal additions, tags, and all other metadata.
-update public.songs as song
-set genre = 'Worship'
-from (values
-  (1, 'Goodness of God'),
-  (2, 'Holy Forever'),
-  (50, 'Revelation Song'),
-  (4, 'Great Are You Lord'),
-  (5, 'Build My Life'),
-  (51, 'The Heart of Worship'),
-  (7, 'Firm Foundation (He Won''t)'),
-  (8, 'Living Hope'),
-  (9, 'King of Kings'),
-  (52, 'Lord I Lift Your Name on High'),
-  (11, 'What a Beautiful Name'),
-  (12, 'Way Maker'),
-  (13, 'How Great Is Our God'),
-  (14, '10,000 Reasons (Bless the Lord)'),
-  (15, 'Oceans (Where Feet May Fail)'),
-  (16, 'This Is Amazing Grace'),
-  (17, 'Cornerstone'),
-  (18, 'Lord I Need You'),
-  (19, 'Reckless Love'),
-  (20, 'Battle Belongs'),
-  (21, 'Raise a Hallelujah'),
-  (53, 'Trading My Sorrows'),
-  (54, 'In Christ Alone'),
-  (55, 'You Are My All in All'),
-  (56, 'As the Deer'),
-  (26, 'Praise'),
-  (27, 'The Blessing'),
-  (28, 'Here I Am to Worship'),
-  (29, 'How He Loves'),
-  (30, 'Mighty to Save'),
-  (31, 'Forever'),
-  (32, 'Blessed Be Your Name'),
-  (33, 'Our God'),
-  (34, 'God of Wonders'),
-  (35, 'Open the Eyes of My Heart'),
-  (36, 'Shout to the Lord'),
-  (37, 'Above All'),
-  (38, 'Indescribable'),
-  (39, 'Hosanna'),
-  (40, 'Amazing Grace (My Chains Are Gone)'),
-  (41, 'Glorious Day'),
-  (42, 'Good Good Father'),
-  (43, 'Christ Is Enough'),
-  (44, 'The Stand'),
-  (45, 'Every Praise'),
-  (57, 'Days of Elijah'),
-  (47, 'Promises'),
-  (48, 'See a Victory'),
-  (49, 'I Speak Jesus'),
-  (58, 'How Great Thou Art'),
-  (59, 'Great Is Thy Faithfulness'),
-  (60, 'Blessed Assurance'),
-  (61, 'It Is Well with My Soul'),
-  (62, 'Holy, Holy, Holy'),
-  (63, 'To God Be the Glory'),
-  (64, 'What a Friend We Have in Jesus'),
-  (65, 'The Old Rugged Cross'),
-  (66, 'Because He Lives'),
-  (67, 'I Surrender All')
-) as starter(id, title)
-where song.id = starter.id and song.title = starter.title
-  and (song.genre is null or btrim(song.genre) = '');

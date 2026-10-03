@@ -63,6 +63,12 @@ function Index() {
           campers, split into teams for the hosted games and give everyone a card for Bingo.
         </p>
       </div>
+      <Link to="/karaoke" className="mt-8 block rounded-2xl border border-border bg-card p-6">
+        <h2 className="font-display text-2xl">My karaoke</h2>
+        <p className="mt-2 text-muted-foreground">
+          Keep your personal setlists, rate songs, and explore your musical taste.
+        </p>
+      </Link>
     </main>
   );
 }
