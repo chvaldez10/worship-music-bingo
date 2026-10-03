@@ -6,6 +6,7 @@ export function PromptCard({
   title,
   detail,
   detailLabel,
+  titleLabel,
   revealed,
   onToggle,
   emptyTitle = "Ready to play?",
@@ -18,6 +19,7 @@ export function PromptCard({
   title?: string | undefined;
   detail?: string | undefined;
   detailLabel?: string | undefined;
+  titleLabel?: string;
   revealed: boolean;
   onToggle: () => void;
   emptyTitle?: string;
@@ -34,6 +36,11 @@ export function PromptCard({
         id={contentId}
         className="prompt-card flex min-h-48 flex-col items-center justify-center rounded-2xl bg-secondary p-6 text-center"
       >
+        {title && revealed && titleLabel && (
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {titleLabel}
+          </p>
+        )}
         <h2
           className={`max-w-full font-display text-3xl [overflow-wrap:anywhere] ${title && revealed ? "sm:text-4xl" : ""}`}
         >

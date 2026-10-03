@@ -46,6 +46,7 @@ describe("App routing", () => {
       "/singing-bee",
       "/whos-the-leader",
       "/guess-the-song",
+      "/complete-the-phrase",
     ])
       expect(hub.getAllByRole("link").some((link) => link.getAttribute("href") === path)).toBe(
         true,

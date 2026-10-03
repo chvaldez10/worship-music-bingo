@@ -1,6 +1,16 @@
 /** Add future games here to include them in the hub. */
 export const GAMES = [
   {
+    id: "complete-the-phrase",
+    path: "/complete-the-phrase",
+    title: "Complete the Phrase",
+    shortTitle: "Complete the Phrase",
+    subtitle: "Listen & finish",
+    description:
+      "Read the first half and let the next person in line finish a familiar Christian phrase.",
+    details: "8 Christian categories · No repeating prompts",
+  },
+  {
     id: "guess-the-song",
     path: "/guess-the-song",
     title: "Guess the Song",

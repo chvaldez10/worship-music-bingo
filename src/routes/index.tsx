@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Grid3X3, Drama, MicVocal, ArrowRight, UsersRound, Music2 } from "lucide-react";
+import {
+  Grid3X3,
+  Drama,
+  MicVocal,
+  ArrowRight,
+  UsersRound,
+  Music2,
+  MessageCircle,
+} from "lucide-react";
 import { GAMES } from "@/data/games";
 
 export const Route = createFileRoute("/")({
@@ -9,13 +17,14 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Bring everyone together with Worship Bingo, Charades, Worship Singing Bee, Guess the Song, and Who’s the Leader?",
+          "Bring everyone together with Worship Bingo, Charades, Worship Singing Bee, Guess the Song, Complete the Phrase, and Who’s the Leader?",
       },
     ],
   }),
   component: Index,
 });
 const icons = {
+  "complete-the-phrase": MessageCircle,
   "guess-the-song": Music2,
   bingo: Grid3X3,
   charades: Drama,
