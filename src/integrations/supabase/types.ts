@@ -14,13 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      charades_categories: {
+        Row: {
+          created_at: string
+          id: number
+          label: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          label: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          label?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      charades_prompts: {
+        Row: {
+          category_id: number
+          created_at: string
+          detail: string | null
+          id: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: number
+          created_at?: string
+          detail?: string | null
+          id?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: number
+          created_at?: string
+          detail?: string | null
+          id?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "charades_prompts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "charades_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_admins: {
+        Row: {
+          user_id: string
+        }
+        Insert: {
+          user_id: string
+        }
+        Update: {
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_games: {
+        Row: {
+          created_at: string
+          game_type: string
+          id: number
+          name: string | null
+          owner_id: string
+          state: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          game_type: string
+          id?: number
+          name?: string | null
+          owner_id: string
+          state?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          game_type?: string
+          id?: number
+          name?: string | null
+          owner_id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      songs: {
+        Row: {
+          artist: string | null
+          created_at: string
+          id: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist?: string | null
+          created_at?: string
+          id?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist?: string | null
+          created_at?: string
+          id?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_content_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
